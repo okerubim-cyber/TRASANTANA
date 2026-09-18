@@ -1,444 +1,112 @@
-<script>
-  // 1. Configurações Globais
-  const LINK_PLANILHA = 
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQwkxBsWzOPpY_ndgnFPJZrD6hPrPjg1XAwt6slM5LzgpxHRNmbWiJGNjiQTMp-D8B6HdYdP_p7ckmA/pub?gid=0&single=true&output=csv";
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T.R.A SANTANA - Distribuidora de Móveis</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card: #151c2c;
+      --accent: #c5a059;
+      --text: #e2e8f0;
+      --subtext: #94a3b8;
+      --border: #232d42;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; padding: 20px; line-height: 1.5; }
+    header { text-align: center; padding: 30px 10px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+    h1 { color: var(--accent); font-size: 2rem; letter-spacing: 2px; }
+    .status-bar { text-align: center; padding: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 20px; font-weight: 500; }
+    .ok { color: #4ade80; }
+    .err { color: #f87171; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .card img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; background: #000; }
+    .card h3 { font-size: 1.1rem; color: #fff; }
+    .price-tag { background: #1e293b; padding: 8px; border-radius: 6px; font-size: 0.9rem; }
+    .price-tag b { color: var(--accent); }
+    .btn { background: var(--accent); color: #000; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; }
+    .btn:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>T.R.A SANTANA</h1>
+    <p style="color: var(--subtext);">Distribuidora de Móveis</p>
+  </header>
+
+  <div id="catalogStatus" class="status-bar">Iniciando carregamento do catálogo...</div>
+
+  <main>
+    <div id="productGrid" class="grid"></div>
+  </main>
+
+  <script>
+  // COLOQUE SEU LINK DO CSV DO GOOGLE SHEETS AQUI (Publicado na web)
+  const LINK_PLANILHA = "SUA_URL_DO_CSV_DO_GOOGLE_SHEETS_AQUI";
 
   const CONFIG = {
     nome: "T.R.A SANTANA",
-    whatsapp: "5543999999999", // Apenas números: País + DDD + Número
-    whatsappExibir: "(43) 99999-9999",
-    cnpj: "00.000.000/0001-00",
-    endereco: "Arapongas - PR",
-    codigoRevendedor: "TRA2026"
+    whatsapp: "5543999999999"
   };
 
-  let PRODUTOS = [];
+  const dinheiro = (v) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-  (() => {
-    "use strict";
+  async function carregarCatalogo() {
+    const status = document.getElementById("catalogStatus");
+    const grid = document.getElementById("productGrid");
 
-    const $ = (selector, root = document) => root.querySelector(selector);     const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-
-    const state = {
-      categoria: "Todos",
-      busca: "",
-      carrinho: new Map(),
-      revendedor: null
-    };
-
-    const dinheiro = (valor) => {
-      const n = Number(valor) || 0;
-      return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-    };
-
-    const numeroBR = (valor) => {
-      if (typeof valor === "number") return valor;
-      let s = String(valor ?? "").trim().replace(/[^\d,.-]/g, "");
-      if (s.includes(",") && s.includes(".")) {
-        if (s.lastIndexOf(",") > s.lastIndexOf(".")) {
-          s = s.replace(/\./g, "").replace(",", ".");
-        } else {
-          s = s.replace(/,/g, "");
-        }
-      } else if (s.includes(",")) {
-        s = s.replace(",", ".");
-      }
-      const n = Number(s);
-      return Number.isFinite(n) ? n : 0;
-    };
-
-    const escapar = (valor) => String(valor ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-
-    const csvParse = (texto) => {
-      const linhas = [];
-      let linha = [];
-      let campo = "";
-      let aspas = false;
-
-      for (let i = 0; i < texto.length; i++) {
-        const c = texto[i];
-        const n = texto[i + 1];
-
-        if (c === '"' && aspas && n === '"') {
-          campo += '"';
-          i++;
-        } else if (c === '"') {
-          aspas = !aspas;
-        } else if (c === "," && !aspas) {
-          linha.push(campo);
-          campo = "";
-        } else if ((c === "\n" || c === "\r") && !aspas) {
-          if (c === "\r" && n === "\n") i++;
-          linha.push(campo);
-          if (linha.some(v => String(v).trim() !== "")) linhas.push(linha);
-          linha = [];
-          campo = "";
-        } else {
-          campo += c;
-        }
-      }
-
-      linha.push(campo);
-      if (linha.some(v => String(v).trim() !== "")) linhas.push(linha);
-      return linhas;
-    };
-
-    function produtoNormalizado(col) {
-      return {
-        id: String(col[0] ?? "").trim(),
-        nome: String(col[1] ?? "").trim(),
-        categoria: String(col[2] ?? "Geral").trim() || "Geral",
-        tipo: "geral",
-        foto: String(col[3] ?? "").trim(),
-        medidas: String(col[4] ?? "").trim(),
-        material: String(col[5] ?? "").trim(),
-        cores: ["Conforme catálogo"],
-        minimo: Math.max(1, parseInt(String(col[8] ?? "1").trim(), 10) || 1),
-        varejo: numeroBR(col[6]),
-        atacado: numeroBR(col[7])
-      };
+    if (!LINK_PLANILHA || LINK_PLANILHA.includes("SUA_URL_DO_CSV")) {
+      status.innerHTML = '<span class="err">⚠️ Configure a variável LINK_PLANILHA no código com o link do seu CSV público do Google Sheets.</span>';
+      return;
     }
 
-    // Carregamento com timeout ajustado (10 segundos de limite)
-    async function carregarCatalogoSeguro() {
-      const status = $("#catalogStatus");
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000);
+    try {
+      const res = await fetch(LINK_PLANILHA, { cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
 
-      try {
-        if (!LINK_PLANILHA || LINK_PLANILHA.includes("SUA_URL_DO_CSV")) {
-          if (status) status.innerHTML = '<span>Configure o LINK_PLANILHA no script.</span>';
-          return;
-        }
+      const texto = await res.text();
+      const linhas = texto.split("\n").map(l => l.split(","));
 
-        const resposta = await fetch(LINK_PLANILHA, {
-          cache: "no-store",
-          signal: controller.signal
-        });
-
-        if (!resposta.ok) throw new Error("HTTP " + resposta.status);
-
-        const textoCSV = await resposta.text();
-        const linhas = csvParse(textoCSV);
-
-        if (linhas.length < 2) {
-          PRODUTOS = [];
-        } else {
-          PRODUTOS = linhas.slice(1)
-            .map(produtoNormalizado)
-            .filter(p => p.nome);
-        }
-
-        if (!PRODUTOS.length) {
-          if (status) status.innerHTML = '<span>Nenhum produto válido foi encontrado na planilha.</span>';
-        } else {
-          if (status) status.innerHTML = '<span class="ok">✓ Catálogo atualizado</span> <span>' + PRODUTOS.length + ' produto(s) carregado(s).</span>';
-        }
-
-        montarCategorias();
-        atualizarHero();
-        renderizarProdutos(PRODUTOS);
-      } catch (erro) {
-        console.error("Erro ao carregar produtos:", erro);
-        if (status) {
-          status.innerHTML =
-            '<span>Não foi possível carregar a planilha agora.</span> ' +
-            '<button type="button" id="retryCatalog">Tentar novamente</button>';
-          $("#retryCatalog")?.addEventListener("click", carregarCatalogoSeguro);
-        }
-      } finally {
-        clearTimeout(timeout);
-      }
-    }
-
-    function montarCategorias() {
-      const container = $("#categoryChips");
-      if (!container) return;
-
-      const categorias = [...new Set(PRODUTOS.map(p => p.categoria).filter(Boolean))]
-        .sort((a, b) => a.localeCompare(b, "pt-BR"));
-
-      container.innerHTML =
-        '<button class="chip" type="button" data-category="Todos" aria-pressed="true">Todos</button>' +
-        categorias.map(cat =>
-          '<button class="chip" type="button" data-category="' +
-          escapar(cat) + '" aria-pressed="false">' + escapar(cat) + '</button>'
-        ).join("");
-
-      $$(".chip", container).forEach(btn => {         btn.addEventListener("click", () => {           state.categoria = btn.dataset.category;           $$
-(".chip", container).forEach(x =>
-            x.setAttribute("aria-pressed", x === btn ? "true" : "false")
-          );
-          renderizarProdutos(PRODUTOS);
-        });
-      });
-    }
-
-    function renderizarProdutos(produtos = PRODUTOS) {
-      const grid = $("#productGrid");
-      if (!grid) return;
-
-      const lista = produtos.filter(p => {
-        const termo = state.busca.toLowerCase().trim();
-        const categoriaOk = state.categoria === "Todos" || p.categoria === state.categoria;
-        const texto = [p.nome, p.categoria, p.material, p.medidas].join(" ").toLowerCase();
-        return categoriaOk && (!termo || texto.includes(termo));
-      });
-
-      if (!lista.length) {
-        grid.innerHTML =
-          '<div class="empty">Nenhum produto encontrado.<br>' +
-          '<button class="btn btn-outline" type="button" id="clearFilters">Limpar filtros</button></div>';
-        $("#clearFilters")?.addEventListener("click", () => {
-          state.categoria = "Todos";
-          state.busca = "";
-          const input = $("#searchInput");           if (input) input.value = "";           $$(".chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.category === "Todos" ? "true" : "false"));
-          renderizarProdutos(PRODUTOS);
-        });
+      if (linhas.length <= 1) {
+        status.innerHTML = '<span class="err">A planilha está sem produtos.</span>';
         return;
       }
 
-      grid.innerHTML = lista.map(p => {
-        const lucro = Math.max(0, p.varejo - p.atacado);
-        const margem = p.varejo > 0 ? (lucro / p.varejo) * 100 : 0;
-        const qtd = state.carrinho.get(p.id)?.qtd || 0;
-        const foto = p.foto
-          ? `<img src="${escapar(p.foto)}" alt="${escapar(p.nome)}" loading="lazy" onerror="this.style.display='none'">`
-          : `<div aria-hidden="true" style="font-family:var(--serif);font-size:42px;color:var(--gold);">T.R.A</div>`;
+      status.innerHTML = `<span class="ok">✓ Catálogo carregado com sucesso! (${linhas.length - 1} produtos)</span>`;
+
+      grid.innerHTML = linhas.slice(1).map(col => {
+        const nome = col[1] ? col[1].replace(/"/g, '') : "Produto";
+        const categoria = col[2] ? col[2].replace(/"/g, '') : "Geral";
+        const foto = col[3] ? col[3].replace(/"/g, '').trim() : "";
+        const varejo = col[6] ? col[6].replace(/[^\d,.-]/g, '').replace(',', '.') : 0;
+        const atacado = col[7] ? col[7].replace(/[^\d,.-]/g, '').replace(',', '.') : 0;
 
         return `
-          <article class="card" data-id="${escapar(p.id)}">
-            <div class="photo">${foto}</div>
-            <div class="body">
-              <div class="cat-name">${escapar(p.categoria)}</div>
-              <h3>${escapar(p.nome)}</h3>
-
-              <div class="specs">
-                ${p.medidas ? `<div>Medidas: <b>${escapar(p.medidas)}</b></div>` : ""}
-                ${p.material ? `<div>Material: <b>${escapar(p.material)}</b></div>` : ""}
-              </div>
-
-              <div class="price">
-                <div class="row"><span>Atacado</span><b>${dinheiro(p.atacado)}</b></div>
-                <div class="row"><span>Venda sugerida</span><b>${dinheiro(p.varejo)}</b></div>
-                <div class="row profit"><span>Lucro bruto</span><b>${dinheiro(lucro)} <em>${margem.toFixed(0)}%</em></b></div>
-                <div class="pbar" aria-label="Margem de lucro de ${margem.toFixed(0)}%"><i style="width:${Math.min(100, Math.max(0, margem))}%"></i></div>
-              </div>
-
-              <div class="min">Mínimo: ${p.minimo} unidade(s)</div>
-
-              <div class="buy">
-                <div class="step">
-                  <button type="button" data-action="minus" data-id="${escapar(p.id)}" ${qtd <= 0 ? "disabled" : ""}>−</button>
-                  <output>${qtd}</output>
-                  <button type="button" data-action="plus" data-id="${escapar(p.id)}">+</button>
-                </div>
-                <button class="btn btn-gold" type="button" data-action="add" data-id="${escapar(p.id)}">
-                  ${qtd ? "Atualizar" : "Adicionar"}
-                </button>
-              </div>
-            </div>
-          </article>
-        `;
-      }).join("");
-
-      $$("[data-action]", grid).forEach(btn => {
-        btn.addEventListener("click", () => {
-          const id = btn.dataset.id;
-          const produto = PRODUTOS.find(p => p.id === id);
-          if (!produto) return;
-
-          const atual = state.carrinho.get(id)?.qtd || 0;
-          let nova = atual;
-
-          if (btn.dataset.action === "plus") nova = atual + produto.minimo;
-          if (btn.dataset.action === "minus") nova = Math.max(0, atual - produto.minimo);
-          if (btn.dataset.action === "add") nova = atual || produto.minimo;
-
-          if (nova > 0) state.carrinho.set(id, { produto, qtd: nova });
-          else state.carrinho.delete(id);
-
-          atualizarCarrinho();
-          renderizarProdutos(PRODUTOS);
-        });
-      });
-    }
-
-    // CORREÇÃO APLICADA AQUI: p.lucro -> lucro
-    function atualizarHero() {
-      const p = PRODUTOS.find(x => x.atacado > 0 && x.varejo > 0);
-      if (!p) return;
-
-      const lucro = p.varejo - p.atacado;
-      const elAtacado = $("#heroAtacado");
-      const elVarejo = $("#heroVarejo");
-      const elLucro = $("#heroLucro");
-      const elCost = $("#heroCost");
-      const elGain = $("#heroGain");
-
-      if (elAtacado) elAtacado.textContent = dinheiro(p.atacado);
-      if (elVarejo) elVarejo.textContent = dinheiro(p.varejo);
-      if (elLucro) elLucro.textContent = dinheiro(lucro); // Corrigido!
-      if (elCost) elCost.textContent = "Atacado " + dinheiro(p.atacado);
-      if (elGain) elGain.textContent = "Lucro " + dinheiro(lucro);
-    }
-
-    function resumoCarrinho() {
-      let total = 0;
-      let lucro = 0;
-      let unidades = 0;
-
-      for (const { produto, qtd } of state.carrinho.values()) {
-        total += produto.atacado * qtd;
-        lucro += Math.max(0, produto.varejo - produto.atacado) * qtd;
-        unidades += qtd;
-      }
-
-      return { total, lucro, unidades };
-    }
-
-    function abrirCarrinho() {
-      $("#cartVeil")?.classList.add("on");
-      $("#cartDrawer")?.classList.add("on");
-      $("#cartDrawer")?.setAttribute("aria-hidden", "false");
-    }
-
-    function fecharCarrinho() {
-      $("#cartVeil")?.classList.remove("on");
-      $("#cartDrawer")?.classList.remove("on");
-      $("#cartDrawer")?.setAttribute("aria-hidden", "true");
-    }
-
-    function atualizarCarrinho() {
-      const resumo = resumoCarrinho();
-      const elCount = $("#cartCount");
-      const elTotal = $("#cartTotal");
-      const elProfit = $("#cartProfit");
-      const elCheckout = $("#checkoutBtn");
-
-      if (elCount) elCount.textContent = resumo.unidades;
-      if (elTotal) elTotal.textContent = dinheiro(resumo.total);
-      if (elProfit) elProfit.textContent = dinheiro(resumo.lucro);
-      if (elCheckout) elCheckout.disabled = resumo.unidades === 0;
-
-      const body = $("#cartBody");
-      if (!body) return;
-
-      if (!state.carrinho.size) {
-        body.innerHTML = `
-          <div class="drawer-empty">
-            Seu pedido está vazio.
-            <br>
-            <button class="btn btn-outline" type="button" id="emptyGoCatalog">Ver catálogo</button>
-          </div>`;
-        $("#emptyGoCatalog")?.addEventListener("click", () => {
-          fecharCarrinho();
-          $("#catalogo")?.scrollIntoView({ behavior: "smooth" });
-        });
-        return;
-      }
-
-      body.innerHTML = [...state.carrinho.values()].map(({ produto, qtd }) => {
-        const subtotal = produto.atacado * qtd;
-        const lucroUnitario = Math.max(0, produto.varejo - produto.atacado);
-        return `
-          <div class="line">
+          <div class="card">
+            ${foto ? `<img src="${foto}" alt="${nome}" onerror="this.style.display='none'">` : ''}
             <div>
-              <b>${escapar(produto.nome)}</b>
-              <div class="sub">${qtd}x ${dinheiro(produto.atacado)} <span class="g">(Lucro: ${dinheiro(lucroUnitario * qtd)})</span></div>
+              <small style="color:var(--subtext);">${categoria}</small>
+              <h3>${nome}</h3>
             </div>
-            <b>${dinheiro(subtotal)}</b>
-            <div class="ctrl">
-              <button class="rm" type="button" data-remove="${escapar(produto.id)}">Remover</button>
+            <div class="price-tag">
+              <div>Atacado: <b>${dinheiro(atacado)}</b></div>
+              <div>Sugerido: <b>${dinheiro(varejo)}</b></div>
             </div>
+            <a class="btn" href="https://wa.me/${CONFIG.whatsapp}?text=Olá,%20tenho%20interesse%20no%20produto:%20${encodeURIComponent(nome)}" target="_blank">Pedir via WhatsApp</a>
           </div>
         `;
       }).join("");
 
-      $$("[data-remove]", body).forEach(btn => {
-        btn.addEventListener("click", () => {
-          state.carrinho.delete(btn.dataset.remove);
-          atualizarCarrinho();
-          renderizarProdutos(PRODUTOS);
-        });
-      });
+    } catch (err) {
+      console.error(err);
+      status.innerHTML = `<span class="err">Erro ao carregar a planilha: ${err.message}</span>`;
     }
+  }
 
-    function inicializar() {
-      if (typeof CONFIG !== "undefined") {
-        if ($("#topWhatsapp")) $("#topWhatsapp").textContent = CONFIG.whatsappExibir;
-        if ($("#footerCnpj")) $("#footerCnpj").textContent = CONFIG.cnpj;
-        if ($("#footerEndereco")) $("#footerEndereco").textContent = CONFIG.endereco;
-        if ($("#footerWhatsapp")) $("#footerWhatsapp").textContent = CONFIG.whatsappExibir;
-        if ($("#heroWhatsapp")) $("#heroWhatsapp").href = `https://wa.me/${CONFIG.whatsapp}`;
-      }
-
-      $("#searchInput")?.addEventListener("input", (e) => {
-        state.busca = e.target.value;
-        renderizarProdutos(PRODUTOS);
-      });
-
-      $("#openCart")?.addEventListener("click", abrirCarrinho);
-      $("#closeCart")?.addEventListener("click", fecharCarrinho);
-      $("#cartVeil")?.addEventListener("click", fecharCarrinho);
-
-      $("#signupForm")?.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const errEl = $("#formError");
-        if (errEl) errEl.textContent = "";
-
-        const codigo = $("#codigo")?.value.trim();
-        if (codigo !== CONFIG.codigoRevendedor) {
-          if (errEl) errEl.textContent = "Código de revendedor inválido. Solicite via WhatsApp.";
-          return;
-        }
-
-        state.revendedor = {
-          nome: $("#nome")?.value.trim(),
-          telefone: $("#telefone")?.value.trim(),
-          cidade: $("#cidade")?.value.trim()
-        };
-
-        alert("Cadastro validado com sucesso! Agora você pode finalizar o pedido.");
-        abrirCarrinho();
-      });
-
-      $("#checkoutBtn")?.addEventListener("click", () => {
-        if (!state.revendedor) {
-          alert("Por favor, preencha a Área do Revendedor no fim da página antes de enviar o pedido.");
-          fecharCarrinho();
-          $("#cadastro")?.scrollIntoView({ behavior: "smooth" });
-          return;
-        }
-
-        let msg = `*NOVO PEDIDO - ${CONFIG.nome}*\n\n`;
-        msg += `*Revendedor:* ${state.revendedor.nome}\n`;
-        msg += `*WhatsApp:* ${state.revendedor.telefone}\n`;
-        msg += `*Cidade:* ${state.revendedor.cidade}\n\n`;
-        msg += `*ITENS DO PEDIDO:*\n`;
-
-        for (const { produto, qtd } of state.carrinho.values()) {
-          msg += `• ${qtd}x ${produto.nome} - ${dinheiro(produto.atacado * qtd)}\n`;
-        }
-
-        const { total, lucro } = resumoCarrinho();
-        msg += `\n*Total Atacado:* ${dinheiro(total)}`;
-        msg += `\n*Lucro Estimado:* ${dinheiro(lucro)}`;
-
-        const url = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
-        window.open(url, "_blank");
-      });
-
-      carregarCatalogoSeguro();
-    }
-
-    document.addEventListener("DOMContentLoaded", inicializar);
-  })();
+  document.addEventListener("DOMContentLoaded", carregarCatalogo);
   </script>
 </body>
 </html>
