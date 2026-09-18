@@ -1,4 +1,18 @@
 <script>
+  // 1. Configurações Globais (Defina a URL do seu CSV exportado da Planilha do Google aqui)
+  const LINK_PLANILHA = "SUA_URL_DO_CSV_DO_GOOGLE_SHEETS_AQUI";
+
+  const CONFIG = {
+    nome: "T.R.A SANTANA",
+    whatsapp: "5543999999999", // Coloque seu número com DDD aqui
+    whatsappExibir: "(43) 99999-9999",
+    cnpj: "00.000.000/0001-00",
+    endereco: "Arapongas - PR",
+    codigoRevendedor: "TRA2026" // Código de validação
+  };
+
+  let PRODUTOS = [];
+
   (() => {
     "use strict";
 
@@ -93,6 +107,11 @@
       const status = $("#catalogStatus");
 
       try {
+        if (!LINK_PLANILHA || LINK_PLANILHA.includes("SUA_URL_DO_CSV")) {
+          if (status) status.innerHTML = '<span>Configure o LINK_PLANILHA no script.</span>';
+          return;
+        }
+
         const resposta = await fetch(LINK_PLANILHA, { cache: "no-store" });
         if (!resposta.ok) throw new Error("HTTP " + resposta.status);
 
@@ -108,10 +127,9 @@
         }
 
         if (!PRODUTOS.length) {
-          status.innerHTML = '<span>Nenhum produto válido foi encontrado na planilha.</span>';
+          if (status) status.innerHTML = '<span>Nenhum produto válido foi encontrado na planilha.</span>';
         } else {
-          status.innerHTML = '<span class="ok">✓ Catálogo atualizado</span><span>' +
-            PRODUTOS.length + ' produto(s) carregado(s).</span>';
+          if (status) status.innerHTML = '<span class="ok">✓ Catálogo atualizado</span> <span>' + PRODUTOS.length + ' produto(s) carregado(s).</span>';
         }
 
         montarCategorias();
@@ -119,15 +137,19 @@
         renderizarProdutos(PRODUTOS);
       } catch (erro) {
         console.error("Erro ao carregar produtos:", erro);
-        status.innerHTML =
-          '<span>Não foi possível carregar a planilha agora.</span>' +
-          '<button type="button" id="retryCatalog">Tentar novamente</button>';
-        $("#retryCatalog")?.addEventListener("click", carregarCatalogoSeguro);
+        if (status) {
+          status.innerHTML =
+            '<span>Não foi possível carregar a planilha agora.</span> ' +
+            '<button type="button" id="retryCatalog">Tentar novamente</button>';
+          $("#retryCatalog")?.addEventListener("click", carregarCatalogoSeguro);
+        }
       }
     }
 
     function montarCategorias() {
       const container = $("#categoryChips");
+      if (!container) return;
+
       const categorias = [...new Set(PRODUTOS.map(p => p.categoria).filter(Boolean))]
         .sort((a, b) => a.localeCompare(b, "pt-BR"));
 
@@ -149,6 +171,8 @@
 
     function renderizarProdutos(produtos = PRODUTOS) {
       const grid = $("#productGrid");
+      if (!grid) return;
+
       const lista = produtos.filter(p => {
         const termo = state.busca.toLowerCase().trim();
         const categoriaOk = state.categoria === "Todos" || p.categoria === state.categoria;
@@ -163,7 +187,7 @@
         $("#clearFilters")?.addEventListener("click", () => {
           state.categoria = "Todos";
           state.busca = "";
-          $("#searchInput").value = "";           $$(".chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.category === "Todos" ? "true" : "false"));
+          const input = $("#searchInput");           if (input) input.value = "";           $$(".chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.category === "Todos" ? "true" : "false"));
           renderizarProdutos(PRODUTOS);
         });
         return;
@@ -174,8 +198,8 @@
         const margem = p.varejo > 0 ? (lucro / p.varejo) * 100 : 0;
         const qtd = state.carrinho.get(p.id)?.qtd || 0;
         const foto = p.foto
-          ? '<img src="' + escapar(p.foto) + '" alt="' + escapar(p.nome) + '" loading="lazy" onerror="this.style.display=\'none\'">'
-          : '<div aria-hidden="true" style="font-family:var(--serif);font-size:42px;color:var(--gold);">T.R.A</div>';
+          ? `<img src="${escapar(p.foto)}" alt="${escapar(p.nome)}" loading="lazy" onerror="this.style.display='none'">`
+          : `<div aria-hidden="true" style="font-family:var(--serif);font-size:42px;color:var(--gold);">T.R.A</div>`;
 
         return `
           <article class="card" data-id="${escapar(p.id)}">
@@ -240,11 +264,17 @@
       if (!p) return;
 
       const lucro = p.varejo - p.atacado;
-      $("#heroAtacado").textContent = dinheiro(p.atacado);
-      $("#heroVarejo").textContent = dinheiro(p.varejo);
-      $("#heroLucro").textContent = dinheiro(lucro);
-      $("#heroCost").textContent = "Atacado " + dinheiro(p.atacado);
-      $("#heroGain").textContent = "Lucro " + dinheiro(lucro);
+      const elAtacado = $("#heroAtacado");
+      const elVarejo = $("#heroVarejo");
+      const elLucro = $("#heroLucro");
+      const elCost = $("#heroCost");
+      const elGain = $("#heroGain");
+
+      if (elAtacado) elAtacado.textContent = dinheiro(p.atacado);
+      if (elVarejo) elVarejo.textContent = dinheiro(p.varejo);
+      if (elLucro) elLucro.textContent = dinheiro(p.lucro);
+      if (elCost) elCost.textContent = "Atacado " + dinheiro(p.atacado);
+      if (elGain) elGain.textContent = "Lucro " + dinheiro(lucro);
     }
 
     function resumoCarrinho() {
@@ -262,25 +292,31 @@
     }
 
     function abrirCarrinho() {
-      $("#cartVeil").classList.add("on");
-      $("#cartDrawer").classList.add("on");
-      $("#cartDrawer").setAttribute("aria-hidden", "false");
+      $("#cartVeil")?.classList.add("on");
+      $("#cartDrawer")?.classList.add("on");
+      $("#cartDrawer")?.setAttribute("aria-hidden", "false");
     }
 
     function fecharCarrinho() {
-      $("#cartVeil").classList.remove("on");
-      $("#cartDrawer").classList.remove("on");
-      $("#cartDrawer").setAttribute("aria-hidden", "true");
+      $("#cartVeil")?.classList.remove("on");
+      $("#cartDrawer")?.classList.remove("on");
+      $("#cartDrawer")?.setAttribute("aria-hidden", "true");
     }
 
     function atualizarCarrinho() {
       const resumo = resumoCarrinho();
-      $("#cartCount").textContent = resumo.unidades;
-      $("#cartTotal").textContent = dinheiro(resumo.total);
-      $("#cartProfit").textContent = dinheiro(resumo.lucro);
-      $("#checkoutBtn").disabled = resumo.unidades === 0;
+      const elCount = $("#cartCount");
+      const elTotal = $("#cartTotal");
+      const elProfit = $("#cartProfit");
+      const elCheckout = $("#checkoutBtn");
+
+      if (elCount) elCount.textContent = resumo.unidades;
+      if (elTotal) elTotal.textContent = dinheiro(resumo.total);
+      if (elProfit) elProfit.textContent = dinheiro(resumo.lucro);
+      if (elCheckout) elCheckout.disabled = resumo.unidades === 0;
 
       const body = $("#cartBody");
+      if (!body) return;
 
       if (!state.carrinho.size) {
         body.innerHTML = `
@@ -323,49 +359,44 @@
     }
 
     function inicializar() {
-      // Preenche os dados globais de CONFIG no topo e rodapé
       if (typeof CONFIG !== "undefined") {
-        $("#topWhatsapp").textContent = CONFIG.whatsappExibir;
-        $("#footerCnpj").textContent = CONFIG.cnpj;
-        $("#footerEndereco").textContent = CONFIG.endereco;
-        $("#footerWhatsapp").textContent = CONFIG.whatsappExibir;
-        $("#heroWhatsapp").href = `https://wa.me/${CONFIG.whatsapp}`;
+        if ($("#topWhatsapp")) $("#topWhatsapp").textContent = CONFIG.whatsappExibir;
+        if ($("#footerCnpj")) $("#footerCnpj").textContent = CONFIG.cnpj;
+        if ($("#footerEndereco")) $("#footerEndereco").textContent = CONFIG.endereco;
+        if ($("#footerWhatsapp")) $("#footerWhatsapp").textContent = CONFIG.whatsappExibir;
+        if ($("#heroWhatsapp")) $("#heroWhatsapp").href = `https://wa.me/${CONFIG.whatsapp}`;
       }
 
-      // Input de Busca
       $("#searchInput")?.addEventListener("input", (e) => {
         state.busca = e.target.value;
         renderizarProdutos(PRODUTOS);
       });
 
-      // Handlers da Gaveta de Pedido
       $("#openCart")?.addEventListener("click", abrirCarrinho);
       $("#closeCart")?.addEventListener("click", fecharCarrinho);
       $("#cartVeil")?.addEventListener("click", fecharCarrinho);
 
-      // Handler do Formulário de Cadastro / Envio WhatsApp
       $("#signupForm")?.addEventListener("submit", (e) => {
         e.preventDefault();
         const errEl = $("#formError");
-        errEl.textContent = "";
+        if (errEl) errEl.textContent = "";
 
-        const codigo = $("#codigo").value.trim();
+        const codigo = $("#codigo")?.value.trim();
         if (codigo !== CONFIG.codigoRevendedor) {
-          errEl.textContent = "Código de revendedor inválido. Solicite via WhatsApp.";
+          if (errEl) errEl.textContent = "Código de revendedor inválido. Solicite via WhatsApp.";
           return;
         }
 
         state.revendedor = {
-          nome: $("#nome").value.trim(),
-          telefone: $("#telefone").value.trim(),
-          cidade: $("#cidade").value.trim()
+          nome: $("#nome")?.value.trim(),
+          telefone: $("#telefone")?.value.trim(),
+          cidade: $("#cidade")?.value.trim()
         };
 
         alert("Cadastro validado com sucesso! Agora você pode finalizar o pedido.");
         abrirCarrinho();
       });
 
-      // Botão Enviar Pedido via WhatsApp
       $("#checkoutBtn")?.addEventListener("click", () => {
         if (!state.revendedor) {
           alert("Por favor, preencha a Área do Revendedor no fim da página antes de enviar o pedido.");
@@ -392,7 +423,6 @@
         window.open(url, "_blank");
       });
 
-      // Carrega os dados da planilha
       carregarCatalogoSeguro();
     }
 
