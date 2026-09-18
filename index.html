@@ -1,14 +1,15 @@
 <script>
-  // 1. Configurações Globais (Defina a URL do seu CSV exportado da Planilha do Google aqui)
-  const LINK_PLANILHA = "SUA_URL_DO_CSV_DO_GOOGLE_SHEETS_AQUI";
+  // 1. Configurações Globais
+  const LINK_PLANILHA = 
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQwkxBsWzOPpY_ndgnFPJZrD6hPrPjg1XAwt6slM5LzgpxHRNmbWiJGNjiQTMp-D8B6HdYdP_p7ckmA/pub?gid=0&single=true&output=csv";
 
   const CONFIG = {
     nome: "T.R.A SANTANA",
-    whatsapp: "5543999999999", // Coloque seu número com DDD aqui
+    whatsapp: "5543999999999", // Apenas números: País + DDD + Número
     whatsappExibir: "(43) 99999-9999",
     cnpj: "00.000.000/0001-00",
     endereco: "Arapongas - PR",
-    codigoRevendedor: "TRA2026" // Código de validação
+    codigoRevendedor: "TRA2026"
   };
 
   let PRODUTOS = [];
@@ -103,8 +104,11 @@
       };
     }
 
+    // Carregamento com timeout ajustado (10 segundos de limite)
     async function carregarCatalogoSeguro() {
       const status = $("#catalogStatus");
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
 
       try {
         if (!LINK_PLANILHA || LINK_PLANILHA.includes("SUA_URL_DO_CSV")) {
@@ -112,7 +116,11 @@
           return;
         }
 
-        const resposta = await fetch(LINK_PLANILHA, { cache: "no-store" });
+        const resposta = await fetch(LINK_PLANILHA, {
+          cache: "no-store",
+          signal: controller.signal
+        });
+
         if (!resposta.ok) throw new Error("HTTP " + resposta.status);
 
         const textoCSV = await resposta.text();
@@ -143,6 +151,8 @@
             '<button type="button" id="retryCatalog">Tentar novamente</button>';
           $("#retryCatalog")?.addEventListener("click", carregarCatalogoSeguro);
         }
+      } finally {
+        clearTimeout(timeout);
       }
     }
 
@@ -259,6 +269,7 @@
       });
     }
 
+    // CORREÇÃO APLICADA AQUI: p.lucro -> lucro
     function atualizarHero() {
       const p = PRODUTOS.find(x => x.atacado > 0 && x.varejo > 0);
       if (!p) return;
@@ -272,7 +283,7 @@
 
       if (elAtacado) elAtacado.textContent = dinheiro(p.atacado);
       if (elVarejo) elVarejo.textContent = dinheiro(p.varejo);
-      if (elLucro) elLucro.textContent = dinheiro(p.lucro);
+      if (elLucro) elLucro.textContent = dinheiro(lucro); // Corrigido!
       if (elCost) elCost.textContent = "Atacado " + dinheiro(p.atacado);
       if (elGain) elGain.textContent = "Lucro " + dinheiro(lucro);
     }
