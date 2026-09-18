@@ -239,9 +239,672 @@ footer .legal{margin-top:24px;font-size:14px;color:var(--muted)}
 .drawer-foot{padding:18px 22px 22px;border-top:1px solid var(--line)}
 </style>
 </head>
+
 <body>
 
-  <!-- Conteúdo do corpo e catálogo entram aqui -->
+  <div class="topbar">
+    <div class="wrap">
+      <span>Distribuidora T.R.A Santana · Atendimento para revendedores</span>
+      <span>WhatsApp: <b id="topWhatsapp"></b></span>
+    </div>
+  </div>
+
+  <header class="nav">
+    <div class="wrap">
+      <a class="brand" href="#inicio" aria-label="T.R.A Santana">
+        <img src="" alt="Logo T.R.A Santana" id="brandLogo" onerror="this.style.display='none'">
+        <div>
+          <b>T.R.A SANTANA</b>
+          <span>Móveis para revenda</span>
+        </div>
+      </a>
+
+      <nav class="links" aria-label="Navegação principal">
+        <a href="#inicio">Início</a>
+        <a href="#catalogo">Catálogo</a>
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#cadastro">Cadastro</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="btn btn-outline" type="button" id="openCart">
+          Pedido <span class="count" id="cartCount">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="inicio">
+      <div class="wrap">
+        <div>
+          <h1>Compre no atacado.<br>Venda com margem.</h1>
+          <p class="lead">
+            Catálogo de móveis para revendedores, com preço de atacado,
+            preço sugerido de venda e cálculo do seu lucro em cada peça.
+          </p>
+          <div class="cta">
+            <a class="btn btn-gold" href="#catalogo">Ver catálogo</a>
+            <a class="btn btn-outline" id="heroWhatsapp" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
+          </div>
+        </div>
+
+        <div class="margin-card">
+          <h2>Veja sua margem</h2>
+          <div class="mbar">
+            <span class="cost" id="heroCost">Atacado</span>
+            <span class="gain" id="heroGain">Seu lucro</span>
+          </div>
+          <dl>
+            <div>
+              <dt>Preço de atacado</dt>
+              <dd id="heroAtacado">R$ 0,00</dd>
+            </div>
+            <div>
+              <dt>Venda sugerida</dt>
+              <dd id="heroVarejo">R$ 0,00</dd>
+            </div>
+            <div class="gain">
+              <dt>Lucro bruto</dt>
+              <dd id="heroLucro">R$ 0,00</dd>
+            </div>
+          </dl>
+          <p class="note">Os valores são calculados automaticamente a partir dos dados da planilha.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="catalogo">
+      <div class="wrap">
+        <div class="sec-head">
+          <div>
+            <h2>Catálogo</h2>
+            <p>Escolha os produtos, informe as quantidades e monte seu pedido.</p>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="chips" id="categoryChips">
+            <button class="chip" type="button" data-category="Todos" aria-pressed="true">Todos</button>
+          </div>
+          <input class="search" id="searchInput" type="search" placeholder="Buscar produto..." aria-label="Buscar produto">
+        </div>
+
+        <div class="status" id="catalogStatus">
+          <span>Carregando catálogo...</span>
+        </div>
+
+        <div class="grid" id="productGrid"></div>
+      </div>
+    </section>
+
+    <section class="how" id="como-funciona">
+      <div class="wrap">
+        <div class="sec-head">
+          <div>
+            <h2>Como funciona</h2>
+            <p>Um processo simples para transformar seu catálogo em pedido.</p>
+          </div>
+        </div>
+
+        <div class="steps">
+          <div class="st">
+            <div class="n">01</div>
+            <h3>Escolha</h3>
+            <p>Veja os produtos disponíveis e confira preço, medidas, material e margem.</p>
+          </div>
+          <div class="st">
+            <div class="n">02</div>
+            <h3>Monte</h3>
+            <p>Defina a quantidade de cada peça e acompanhe o total do pedido.</p>
+          </div>
+          <div class="st">
+            <div class="n">03</div>
+            <h3>Envie</h3>
+            <p>Depois de confirmar seus dados, envie o pedido diretamente pelo WhatsApp.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="cadastro">
+      <div class="wrap signup">
+        <div>
+          <h2>Área do revendedor</h2>
+          <p>
+            Informe seus dados para liberar o pedido. O código de revendedor
+            é utilizado para validar o acesso ao envio.
+          </p>
+        </div>
+
+        <form class="form" id="signupForm">
+          <div class="two">
+            <div>
+              <label for="nome">Nome</label>
+              <input id="nome" name="nome" required autocomplete="name">
+            </div>
+            <div>
+              <label for="telefone">WhatsApp</label>
+              <input id="telefone" name="telefone" required autocomplete="tel" placeholder="(00) 00000-0000">
+            </div>
+          </div>
+
+          <div class="two">
+            <div>
+              <label for="cidade">Cidade</label>
+              <input id="cidade" name="cidade" required autocomplete="address-level2">
+            </div>
+            <div>
+              <label for="codigo">Código do revendedor</label>
+              <input id="codigo" name="codigo" required autocomplete="off">
+            </div>
+          </div>
+
+          <div class="err" id="formError" aria-live="polite"></div>
+          <button class="btn btn-gold" type="submit">Continuar com o pedido</button>
+          <small>Se ainda não possui o código, fale conosco pelo WhatsApp.</small>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="cols">
+        <div>
+          <h2>T.R.A Santana</h2>
+          <p>Distribuidora de móveis para revendedores.</p>
+        </div>
+        <div>
+          <p><b>CNPJ:</b> <span id="footerCnpj"></span></p>
+          <p><b>Endereço:</b> <span id="footerEndereco"></span></p>
+          <p><b>WhatsApp:</b> <span id="footerWhatsapp"></span></p>
+        </div>
+      </div>
+      <p class="legal">Preços e disponibilidade sujeitos à atualização na planilha de catálogo.</p>
+    </div>
+  </footer>
+
+  <div class="veil" id="cartVeil"></div>
+
+  <aside class="drawer" id="cartDrawer" aria-label="Pedido" aria-hidden="true">
+    <div class="drawer-head">
+      <h2>Seu pedido</h2>
+      <button class="x" type="button" id="closeCart" aria-label="Fechar pedido">×</button>
+    </div>
+    <div class="drawer-body" id="cartBody">
+      <div class="drawer-empty">
+        Seu pedido está vazio.
+        <br>
+        <button class="btn btn-outline" type="button" id="emptyGoCatalog">Ver catálogo</button>
+      </div>
+    </div>
+    <div class="drawer-foot">
+      <div class="field">
+        <span>Total</span>
+        <b id="cartTotal">R$ 0,00</b>
+      </div>
+      <div class="field" style="margin-top:8px">
+        <span>Lucro bruto estimado</span>
+        <b id="cartProfit">R$ 0,00</b>
+      </div>
+      <button class="btn btn-gold" type="button" id="checkoutBtn" style="width:100%;margin-top:14px" disabled>
+        Enviar pedido pelo WhatsApp
+      </button>
+    </div>
+  </aside>
+
+  <script>
+  (() => {
+    "use strict";
+
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+    const state = {
+      categoria: "Todos",
+      busca: "",
+      carrinho: new Map(),
+      revendedor: null
+    };
+
+    const dinheiro = (valor) => {
+      const n = Number(valor) || 0;
+      return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    };
+
+    const numeroBR = (valor) => {
+      if (typeof valor === "number") return valor;
+      let s = String(valor ?? "").trim().replace(/[^\d,.-]/g, "");
+      if (s.includes(",") && s.includes(".")) {
+        if (s.lastIndexOf(",") > s.lastIndexOf(".")) {
+          s = s.replace(/\./g, "").replace(",", ".");
+        } else {
+          s = s.replace(/,/g, "");
+        }
+      } else if (s.includes(",")) {
+        s = s.replace(",", ".");
+      }
+      const n = Number(s);
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    const escapar = (valor) => String(valor ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+    const csvParse = (texto) => {
+      const linhas = [];
+      let linha = [];
+      let campo = "";
+      let aspas = false;
+
+      for (let i = 0; i < texto.length; i++) {
+        const c = texto[i];
+        const n = texto[i + 1];
+
+        if (c === '"' && aspas && n === '"') {
+          campo += '"';
+          i++;
+        } else if (c === '"') {
+          aspas = !aspas;
+        } else if (c === "," && !aspas) {
+          linha.push(campo);
+          campo = "";
+        } else if ((c === "\n" || c === "\r") && !aspas) {
+          if (c === "\r" && n === "\n") i++;
+          linha.push(campo);
+          if (linha.some(v => String(v).trim() !== "")) linhas.push(linha);
+          linha = [];
+          campo = "";
+        } else {
+          campo += c;
+        }
+      }
+
+      linha.push(campo);
+      if (linha.some(v => String(v).trim() !== "")) linhas.push(linha);
+      return linhas;
+    };
+
+    function produtoNormalizado(col) {
+      return {
+        id: String(col[0] ?? "").trim(),
+        nome: String(col[1] ?? "").trim(),
+        categoria: String(col[2] ?? "Geral").trim() || "Geral",
+        tipo: "geral",
+        foto: String(col[3] ?? "").trim(),
+        medidas: String(col[4] ?? "").trim(),
+        material: String(col[5] ?? "").trim(),
+        cores: ["Conforme catálogo"],
+        minimo: Math.max(1, parseInt(String(col[8] ?? "1").trim(), 10) || 1),
+        varejo: numeroBR(col[6]),
+        atacado: numeroBR(col[7])
+      };
+    }
+
+    async function carregarCatalogoSeguro() {
+      const status = $("#catalogStatus");
+
+      try {
+        const resposta = await fetch(LINK_PLANILHA, { cache: "no-store" });
+        if (!resposta.ok) throw new Error("HTTP " + resposta.status);
+
+        const textoCSV = await resposta.text();
+        const linhas = csvParse(textoCSV);
+
+        if (linhas.length < 2) {
+          PRODUTOS = [];
+        } else {
+          PRODUTOS = linhas.slice(1)
+            .map(produtoNormalizado)
+            .filter(p => p.nome);
+        }
+
+        if (!PRODUTOS.length) {
+          status.innerHTML = '<span>Nenhum produto válido foi encontrado na planilha.</span>';
+        } else {
+          status.innerHTML = '<span class="ok">✓ Catálogo atualizado</span><span>' +
+            PRODUTOS.length + ' produto(s) carregado(s).</span>';
+        }
+
+        montarCategorias();
+        atualizarHero();
+        renderizarProdutos(PRODUTOS);
+      } catch (erro) {
+        console.error("Erro ao carregar produtos:", erro);
+        status.innerHTML =
+          '<span>Não foi possível carregar a planilha agora.</span>' +
+          '<button type="button" id="retryCatalog">Tentar novamente</button>';
+        $("#retryCatalog")?.addEventListener("click", carregarCatalogoSeguro);
+      }
+    }
+
+    function montarCategorias() {
+      const container = $("#categoryChips");
+      const categorias = [...new Set(PRODUTOS.map(p => p.categoria).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+      container.innerHTML =
+        '<button class="chip" type="button" data-category="Todos" aria-pressed="true">Todos</button>' +
+        categorias.map(cat =>
+          '<button class="chip" type="button" data-category="' +
+          escapar(cat) + '" aria-pressed="false">' + escapar(cat) + '</button>'
+        ).join("");
+
+      $$(".chip", container).forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.categoria = btn.dataset.category;
+          $$(".chip", container).forEach(x =>
+            x.setAttribute("aria-pressed", x === btn ? "true" : "false")
+          );
+          renderizarProdutos(PRODUTOS);
+        });
+      });
+    }
+
+    function produtosVisiveis() {
+      const termo = state.busca.toLowerCase().trim();
+
+      return PRODUTOS.filter(p => {
+        const categoriaOk = state.categoria === "Todos" || p.categoria === state.categoria;
+        const texto = [p.nome, p.categoria, p.material, p.medidas].join(" ").toLowerCase();
+        const buscaOk = !termo || texto.includes(termo);
+        return categoriaOk && buscaOk;
+      });
+    }
+
+    function renderizarProdutos(produtos = PRODUTOS) {
+      const grid = $("#productGrid");
+      const lista = produtos.filter(p => {
+        const termo = state.busca.toLowerCase().trim();
+        const categoriaOk = state.categoria === "Todos" || p.categoria === state.categoria;
+        const texto = [p.nome, p.categoria, p.material, p.medidas].join(" ").toLowerCase();
+        return categoriaOk && (!termo || texto.includes(termo));
+      });
+
+      if (!lista.length) {
+        grid.innerHTML =
+          '<div class="empty">Nenhum produto encontrado.<br>' +
+          '<button class="btn btn-outline" type="button" id="clearFilters">Limpar filtros</button></div>';
+        $("#clearFilters")?.addEventListener("click", () => {
+          state.categoria = "Todos";
+          state.busca = "";
+          $("#searchInput").value = "";
+          $$(".chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.category === "Todos" ? "true" : "false"));
+          renderizarProdutos(PRODUTOS);
+        });
+        return;
+      }
+
+      grid.innerHTML = lista.map(p => {
+        const lucro = Math.max(0, p.varejo - p.atacado);
+        const margem = p.varejo > 0 ? (lucro / p.varejo) * 100 : 0;
+        const qtd = state.carrinho.get(p.id)?.qtd || 0;
+        const foto = p.foto
+          ? '<img src="' + escapar(p.foto) + '" alt="' + escapar(p.nome) + '" loading="lazy" onerror="this.style.display=\'none\'">'
+          : '<div aria-hidden="true" style="font-family:var(--serif);font-size:42px;color:var(--gold);">T.R.A</div>';
+
+        return `
+          <article class="card" data-id="${escapar(p.id)}">
+            <div class="photo">${foto}</div>
+            <div class="body">
+              <div class="cat-name">${escapar(p.categoria)}</div>
+              <h3>${escapar(p.nome)}</h3>
+
+              <div class="specs">
+                ${p.medidas ? `<div>Medidas: <b>${escapar(p.medidas)}</b></div>` : ""}
+                ${p.material ? `<div>Material: <b>${escapar(p.material)}</b></div>` : ""}
+              </div>
+
+              <div class="price">
+                <div class="row"><span>Atacado</span><b>${dinheiro(p.atacado)}</b></div>
+                <div class="row"><span>Venda sugerida</span><b>${dinheiro(p.varejo)}</b></div>
+                <div class="row profit"><span>Lucro bruto</span><b>${dinheiro(lucro)} <em>${margem.toFixed(0)}%</em></b></div>
+                <div class="pbar" aria-label="Margem de lucro de ${margem.toFixed(0)}%"><i style="width:${Math.min(100, Math.max(0, margem))}%"></i></div>
+              </div>
+
+              <div class="min">Mínimo: ${p.minimo} unidade(s)</div>
+
+              <div class="buy">
+                <div class="step">
+                  <button type="button" data-action="minus" data-id="${escapar(p.id)}" ${qtd <= 0 ? "disabled" : ""}>−</button>
+                  <output>${qtd}</output>
+                  <button type="button" data-action="plus" data-id="${escapar(p.id)}">+</button>
+                </div>
+                <button class="btn btn-gold" type="button" data-action="add" data-id="${escapar(p.id)}">
+                  ${qtd ? "Atualizar" : "Adicionar"}
+                </button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      $$("[data-action]", grid).forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.id;
+          const produto = PRODUTOS.find(p => p.id === id);
+          if (!produto) return;
+
+          const atual = state.carrinho.get(id)?.qtd || 0;
+          let nova = atual;
+
+          if (btn.dataset.action === "plus") nova = atual + produto.minimo;
+          if (btn.dataset.action === "minus") nova = Math.max(0, atual - produto.minimo);
+          if (btn.dataset.action === "add") {
+            nova = atual || produto.minimo;
+          }
+
+          if (nova > 0) state.carrinho.set(id, { produto, qtd: nova });
+          else state.carrinho.delete(id);
+
+          atualizarCarrinho();
+          renderizarProdutos(PRODUTOS);
+        });
+      });
+    }
+
+    function atualizarHero() {
+      const p = PRODUTOS.find(x => x.atacado > 0 && x.varejo > 0);
+      if (!p) return;
+
+      const lucro = p.varejo - p.atacado;
+      $("#heroAtacado").textContent = dinheiro(p.atacado);
+      $("#heroVarejo").textContent = dinheiro(p.varejo);
+      $("#heroLucro").textContent = dinheiro(lucro);
+      $("#heroCost").textContent = "Atacado " + dinheiro(p.atacado);
+      $("#heroGain").textContent = "Lucro " + dinheiro(lucro);
+    }
+
+    function resumoCarrinho() {
+      let total = 0;
+      let lucro = 0;
+      let unidades = 0;
+
+      for (const { produto, qtd } of state.carrinho.values()) {
+        total += produto.atacado * qtd;
+        lucro += Math.max(0, produto.varejo - produto.atacado) * qtd;
+        unidades += qtd;
+      }
+
+      return { total, lucro, unidades };
+    }
+
+    function atualizarCarrinho() {
+      const resumo = resumoCarrinho();
+      $("#cartCount").textContent = resumo.unidades;
+      $("#cartTotal").textContent = dinheiro(resumo.total);
+      $("#cartProfit").textContent = dinheiro(resumo.lucro);
+      $("#checkoutBtn").disabled = resumo.unidades === 0 || !state.revendedor;
+
+      const body = $("#cartBody");
+
+      if (!state.carrinho.size) {
+        body.innerHTML = `
+          <div class="drawer-empty">
+            Seu pedido está vazio.
+            <br>
+            <button class="btn btn-outline" type="button" id="emptyGoCatalog">Ver catálogo</button>
+          </div>`;
+        $("#emptyGoCatalog").addEventListener("click", () => {
+          fecharCarrinho();
+          $("#catalogo").scrollIntoView({ behavior: "smooth" });
+        });
+        return;
+      }
+
+      body.innerHTML = [...state.carrinho.values()].map(({ produto, qtd }) => {
+        const total = produto.atacado * qtd;
+        const lucro = Math.max(0, produto.varejo - produto.atacado) * qtd;
+
+        return `
+          <div class="line">
+            <div>
+              <b>${escapar(produto.nome)}</b>
+              <div class="sub">${qtd} × ${dinheiro(produto.atacado)}</div>
+              <div class="sub">Lucro: <span class="g">${dinheiro(lucro)}</span></div>
+            </div>
+            <strong>${dinheiro(total)}</strong>
+            <div class="ctrl">
+              <div class="step">
+                <button type="button" data-cart="minus" data-id="${escapar(produto.id)}">−</button>
+                <output>${qtd}</output>
+                <button type="button" data-cart="plus" data-id="${escapar(produto.id)}">+</button>
+              </div>
+              <button class="rm" type="button" data-cart="remove" data-id="${escapar(produto.id)}">Remover</button>
+            </div>
+          </div>`;
+      }).join("");
+
+      $$("[data-cart]", body).forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.id;
+          const item = state.carrinho.get(id);
+          if (!item) return;
+
+          if (btn.dataset.cart === "remove") {
+            state.carrinho.delete(id);
+          } else if (btn.dataset.cart === "plus") {
+            item.qtd += item.produto.minimo;
+          } else if (btn.dataset.cart === "minus") {
+            item.qtd -= item.produto.minimo;
+            if (item.qtd <= 0) state.carrinho.delete(id);
+          }
+
+          atualizarCarrinho();
+          renderizarProdutos(PRODUTOS);
+        });
+      });
+    }
+
+    function abrirCarrinho() {
+      $("#cartDrawer").classList.add("on");
+      $("#cartVeil").classList.add("on");
+      $("#cartDrawer").setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function fecharCarrinho() {
+      $("#cartDrawer").classList.remove("on");
+      $("#cartVeil").classList.remove("on");
+      $("#cartDrawer").setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
+
+    function abrirWhatsApp() {
+      if (!state.revendedor) {
+        $("#cadastro").scrollIntoView({ behavior: "smooth" });
+        $("#formError").textContent = "Preencha o cadastro para liberar o envio do pedido.";
+        return;
+      }
+
+      if (!state.carrinho.size) return;
+
+      const linhas = [
+        "Olá, T.R.A Santana!",
+        "",
+        "Gostaria de fazer o seguinte pedido:",
+        ""
+      ];
+
+      for (const { produto, qtd } of state.carrinho.values()) {
+        linhas.push(
+          `• ${produto.nome} — ${qtd} un. — ${dinheiro(produto.atacado * qtd)}`
+        );
+      }
+
+      const resumo = resumoCarrinho();
+
+      linhas.push(
+        "",
+        `Total: ${dinheiro(resumo.total)}`,
+        `Lucro bruto estimado: ${dinheiro(resumo.lucro)}`,
+        "",
+        "Dados do revendedor:",
+        `Nome: ${state.revendedor.nome}`,
+        `WhatsApp: ${state.revendedor.telefone}`,
+        `Cidade: ${state.revendedor.cidade}`
+      );
+
+      const url = "https://wa.me/" + CONFIG.whatsapp + "?text=" +
+        encodeURIComponent(linhas.join("\n"));
+
+      window.open(url, "_blank", "noopener");
+    }
+
+    $("#searchInput").addEventListener("input", e => {
+      state.busca = e.target.value;
+      renderizarProdutos(PRODUTOS);
+    });
+
+    $("#openCart").addEventListener("click", abrirCarrinho);
+    $("#closeCart").addEventListener("click", fecharCarrinho);
+    $("#cartVeil").addEventListener("click", fecharCarrinho);
+    $("#checkoutBtn").addEventListener("click", abrirWhatsApp);
+
+    $("#heroWhatsapp").href =
+      "https://wa.me/" + CONFIG.whatsapp +
+      "?text=" + encodeURIComponent("Olá! Gostaria de informações sobre o catálogo da T.R.A Santana.");
+
+    $("#topWhatsapp").textContent = CONFIG.whatsappExibir;
+    $("#footerWhatsapp").textContent = CONFIG.whatsappExibir;
+    $("#footerCnpj").textContent = CONFIG.cnpj;
+    $("#footerEndereco").textContent = CONFIG.endereco;
+
+    $("#signupForm").addEventListener("submit", e => {
+      e.preventDefault();
+
+      const nome = $("#nome").value.trim();
+      const telefone = $("#telefone").value.trim();
+      const cidade = $("#cidade").value.trim();
+      const codigo = $("#codigo").value.trim();
+
+      $("#formError").textContent = "";
+
+      if (codigo !== CONFIG.codigoRevendedor) {
+        $("#formError").textContent = "Código de revendedor inválido.";
+        return;
+      }
+
+      state.revendedor = { nome, telefone, cidade };
+      $("#formError").textContent = "";
+      atualizarCarrinho();
+      abrirCarrinho();
+    });
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") fecharCarrinho();
+    });
+
+    atualizarCarrinho();
+    carregarCatalogoSeguro();
+  })();
+  </script>
 
 </body>
+
 </html>
