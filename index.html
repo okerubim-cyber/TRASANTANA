@@ -36,58 +36,46 @@ const CONFIG = {
    O lucro é calculado sozinho: varejo - atacado.
    ATENÇÃO: os produtos e preços abaixo são EXEMPLOS. Troque pelos seus. */
 const PRODUTOS = [
-  { id:"sofa-nordico", nome:"Sofá Nórdico 3 lugares", categoria:"Sala", tipo:"sofa", foto:"",
-    medidas:"210 × 90 × 85 cm", material:"Tecido suede, estrutura em madeira",
-    cores:["Cinza","Bege","Verde"], minimo:3, varejo:1890, atacado:1190 },
-  { id:"sofa-retratil", nome:"Sofá Retrátil 2,10 m", categoria:"Sala", tipo:"sofa", foto:"",
-    medidas:"210 × 100 × 95 cm (aberto: 170 cm de fundo)", material:"Tecido suede, espuma D33",
-    cores:["Cinza","Preto"], minimo:2, varejo:2490, atacado:1590 },
-  { id:"rack-tv", nome:"Rack com painel para TV 65\"", categoria:"Sala", tipo:"rack", foto:"",
-    medidas:"180 × 35 × 180 cm (com painel)", material:"MDF 15 mm",
-    cores:["Freijó","Off white"], minimo:4, varejo:890, atacado:520 },
-  { id:"mesa-centro", nome:"Mesa de centro redonda", categoria:"Sala", tipo:"mesacentro", foto:"",
-    medidas:"80 × 80 × 40 cm", material:"MDF com pés em madeira",
-    cores:["Freijó","Preto"], minimo:4, varejo:490, atacado:290 },
-  { id:"poltrona", nome:"Poltrona decorativa", categoria:"Sala", tipo:"poltrona", foto:"",
-    medidas:"75 × 78 × 88 cm", material:"Tecido bouclé, pés em madeira",
-    cores:["Off white","Caramelo"], minimo:4, varejo:690, atacado:410 },
+  // Substitua o link entre aspas pelo LINK CSV que você copiou no Passo 2
+const LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQwkxBsWzOPpY_ndgnFPJZrD6hPrPjg1XAwt6slM5LzgpxHRNmbWiJGNjiQTMp-D8B6HdYdP_p7ckmA/pub?gid=0&single=true&output=csv";
 
-  { id:"cama-box-queen", nome:"Cama Box Queen com cabeceira", categoria:"Quarto", tipo:"cama", foto:"",
-    medidas:"Colchão 158 × 198 cm", material:"Base em MDF, espuma D33",
-    cores:["Cinza","Bege"], minimo:3, varejo:1490, atacado:910 },
-  { id:"guarda-roupa-6p", nome:"Guarda-roupa 6 portas", categoria:"Quarto", tipo:"guardaroupa", foto:"",
-    medidas:"240 × 52 × 220 cm", material:"MDF 15 mm",
-    cores:["Freijó","Branco"], minimo:2, varejo:1790, atacado:1090 },
-  { id:"comoda-6g", nome:"Cômoda 6 gavetas", categoria:"Quarto", tipo:"comoda", foto:"",
-    medidas:"120 × 45 × 90 cm", material:"MDF 15 mm",
-    cores:["Freijó","Branco"], minimo:3, varejo:990, atacado:590 },
-  { id:"criado-mudo", nome:"Criado-mudo (par)", categoria:"Quarto", tipo:"criado", foto:"",
-    medidas:"45 × 38 × 55 cm cada", material:"MDF 15 mm",
-    cores:["Freijó","Branco","Preto"], minimo:4, varejo:490, atacado:290 },
+let PRODUTOS = [];
 
-  { id:"mesa-jantar-6", nome:"Mesa de jantar 6 lugares", categoria:"Cozinha e jantar", tipo:"mesa", foto:"",
-    medidas:"160 × 90 × 76 cm", material:"Tampo em MDF, pés em madeira maciça",
-    cores:["Freijó","Preto"], minimo:2, varejo:1390, atacado:830 },
-  { id:"kit-cadeiras", nome:"Kit 2 cadeiras estofadas", categoria:"Cozinha e jantar", tipo:"cadeira", foto:"",
-    medidas:"45 × 55 × 92 cm cada", material:"Estofado em linho, pés em madeira",
-    cores:["Cinza","Bege"], minimo:4, varejo:590, atacado:350 },
-  { id:"aparador", nome:"Aparador buffet", categoria:"Cozinha e jantar", tipo:"aparador", foto:"",
-    medidas:"160 × 40 × 80 cm", material:"MDF 15 mm, puxadores metálicos",
-    cores:["Freijó","Off white"], minimo:2, varejo:1190, atacado:720 },
-  { id:"balcao-cozinha", nome:"Balcão de cozinha 3 portas", categoria:"Cozinha e jantar", tipo:"aparador", foto:"",
-    medidas:"120 × 40 × 85 cm", material:"MDF 15 mm",
-    cores:["Branco","Cinza"], minimo:3, varejo:690, atacado:410 },
+async function carregarProdutosDaPlanilha() {
+  try {
+    const resposta = await fetch(LINK_PLANILHA);
+    const textoCSV = await resposta.text();
+    
+    // Converte o texto da planilha em lista de produtos
+    const linhas = textoCSV.split("\n").slice(1);
+    PRODUTOS = linhas.map(linha => {
+      const col = linha.split(",");
+      return {
+        id: col[0]?.trim(),
+        nome: col[1]?.trim(),
+        categoria: col[2]?.trim(),
+        tipo: "geral",
+        foto: col[3]?.trim(),
+        medidas: col[4]?.trim(),
+        material: col[5]?.trim(),
+        cores: ["Conforme catálogo"],
+        minimo: 1,
+        varejo: parseFloat(col[6]) || 0,
+        atacado: parseFloat(col[7]) || 0
+      };
+    }).filter(p => p.nome); // Remove linhas vazias
 
-  { id:"escrivaninha", nome:"Escrivaninha com gavetas", categoria:"Escritório", tipo:"escrivaninha", foto:"",
-    medidas:"120 × 60 × 75 cm", material:"MDF 15 mm, pés em aço",
-    cores:["Freijó","Branco"], minimo:3, varejo:790, atacado:470 },
-  { id:"cadeira-escritorio", nome:"Cadeira de escritório giratória", categoria:"Escritório", tipo:"cadeiraesc", foto:"",
-    medidas:"60 × 60 × 95 a 105 cm", material:"Tela mesh, base em nylon",
-    cores:["Preto","Cinza"], minimo:4, varejo:690, atacado:400 },
-  { id:"estante-livros", nome:"Estante para livros 4 nichos", categoria:"Escritório", tipo:"estante", foto:"",
-    medidas:"80 × 30 × 180 cm", material:"MDF 15 mm",
-    cores:["Freijó","Branco"], minimo:4, varejo:590, atacado:340 }
-];
+    // Atualiza a exibição na tela
+    if (typeof renderizarProdutos === "function") {
+      renderizarProdutos(PRODUTOS);
+    }
+  } catch (erro) {
+    console.error("Erro ao carregar produtos:", erro);
+  }
+}
+
+// Carrega os dados assim que o site abre
+carregarProdutosDaPlanilha();
 </script>
 <!-- ================== FIM DA ÁREA DE EDIÇÃO ================== -->
 
