@@ -1,465 +1,8 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>T.R.A Santana · Distribuidora de móveis para revendedores</title>
-<meta name="description" content="Móveis para revenda com preço de atacado. Veja seu lucro em cada peça e envie o pedido pelo WhatsApp.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-
-<!-- =====================================================================
-     EDITE AQUI: dados do site, produtos e preços
-     ===================================================================== -->
 <script>
-const CONFIG = {
-  nome: "T.R.A Santana",
-  whatsapp: "5543999773495",          // só números: 55 + DDD + número
-  whatsappExibir: "(43) 99977-3495",
-  cnpj: "67.218.109/0001-70",
-  endereco: "Arapongas - PR",
-
-  // Código que você envia ao revendedor aprovado.
-  codigoRevendedor: "TRA2026"
-};
-
-// Link para publicar a planilha em formato CSV
-const LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQwkxBsWzOPpY_ndgnFPJZrD6hPrPjg1XAwt6slM5LzgpxHRNmbWiJGNjiQTMp-D8B6HdYdP_p7ckmA/pub?gid=0&single=true&output=csv";
-
-let PRODUTOS = [];
-
-async function carregarProdutosDaPlanilha() {
-  try {
-    const resposta = await fetch(LINK_PLANILHA);
-    const textoCSV = await resposta.text();
-    
-    // Converte o texto da planilha em lista de produtos
-    const linhas = textoCSV.split("\n").slice(1);
-    PRODUTOS = linhas.map(linha => {
-      const col = linha.split(",");
-      return {
-        id: col[0]?.trim(),
-        nome: col[1]?.trim(),
-        categoria: col[2]?.trim(),
-        tipo: "geral",
-        foto: col[3]?.trim(),
-        medidas: col[4]?.trim(),
-        material: col[5]?.trim(),
-        cores: ["Conforme catálogo"],
-        minimo: 1,
-        varejo: parseFloat(col[6]) || 0,
-        atacado: parseFloat(col[7]) || 0
-      };
-    }).filter(p => p.nome); // Remove linhas vazias
-
-    // Atualiza a exibição na tela
-    if (typeof renderizarProdutos === "function") {
-      renderizarProdutos(PRODUTOS);
-    }
-  } catch (erro) {
-    console.error("Erro ao carregar produtos:", erro);
-  }
-}
-
-// Carrega os dados assim que a página carrega
-window.addEventListener("DOMContentLoaded", carregarProdutosDaPlanilha);
-</script>
-<!-- ================== FIM DA ÁREA DE EDIÇÃO ================== -->
-
-<style>
-:root{
-  --bg:#0A0A09; --panel:#141311; --panel2:#1C1A17; --line:#2E2A22;
-  --text:#F2EDE3; --muted:#A9A193;
-  --gold:#C9A55C; --gold-hi:#E7CB86; --gold-lo:#8F7233; --ink:#17130A; --green:#8FD19E;
-  --ph1:#8F7233; --ph2:#5A4823; --ph3:#D9BC78;
-  --serif:'Cormorant Garamond',Georgia,'Times New Roman',serif;
-  --sans:'Jost','Segoe UI',system-ui,-apple-system,sans-serif;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
-h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.05;letter-spacing:-.01em}
-a{color:inherit;text-decoration:none}
-button,input,select{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--gold-hi);outline-offset:3px;border-radius:4px}
-.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
-[hidden]{display:none!important}
-
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;border-radius:6px;border:1px solid transparent;font-weight:500;cursor:pointer;background:none;transition:background .15s,border-color .15s,color .15s;text-align:center}
-.btn-gold{background:var(--gold);color:var(--ink);font-weight:600}
-.btn-gold:hover{background:var(--gold-hi)}
-.btn-outline{border-color:var(--gold-lo);color:var(--gold-hi)}
-.btn-outline:hover{border-color:var(--gold);background:rgba(201,165,92,.1)}
-.btn[aria-disabled="true"],.btn:disabled{opacity:.45;pointer-events:none}
-
-/* topo */
-.topbar{border-bottom:1px solid var(--line);font-size:14px;color:var(--muted)}
-.topbar .wrap{display:flex;justify-content:space-between;gap:16px;padding-top:8px;padding-bottom:8px;flex-wrap:wrap}
-header.nav{position:sticky;top:0;z-index:40;background:rgba(10,10,9,.96);border-bottom:1px solid var(--gold-lo)}
-header.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:76px}
-.brand{display:flex;align-items:center;gap:14px}
-.brand img{width:54px;height:49px;border-radius:8px;border:1px solid var(--gold-lo);display:block}
-.brand b{display:block;font-family:var(--serif);font-size:24px;font-weight:600;letter-spacing:.2em;color:var(--gold-hi);line-height:1}
-.brand span{display:block;font-size:13px;color:var(--muted);margin-top:5px}
-nav.links{display:flex;gap:30px;color:var(--muted)}
-nav.links a:hover{color:var(--gold-hi)}
-.nav-actions{display:flex;gap:10px;align-items:center}
-.nav-actions .btn{padding:9px 16px;font-size:15px}
-.count{background:var(--ink);color:var(--gold-hi);border-radius:999px;min-width:22px;height:22px;padding:0 6px;display:inline-grid;place-items:center;font-size:13px;font-weight:600}
-@media(max-width:900px){nav.links{display:none}}
-@media(max-width:560px){.topbar .wrap span:last-child{display:none}.brand span{display:none}.brand b{font-size:19px}.nav-actions .btn-outline{padding:9px 12px}}
-
-/* hero */
-.hero{padding:64px 0 72px}
-.hero .wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:56px;align-items:center}
-.hero h1{font-size:clamp(44px,6vw,78px);font-weight:600}
-.hero .lead{font-size:19px;color:var(--muted);margin:24px 0 34px;max-width:50ch}
-.cta{display:flex;gap:14px;flex-wrap:wrap}
-.margin-card{background:var(--panel);border:1px solid var(--gold-lo);border-radius:14px;padding:32px}
-.margin-card h2{font-size:30px;margin-bottom:22px}
-.mbar{display:flex;height:44px;border-radius:6px;overflow:hidden;font-size:14px;font-weight:600}
-.mbar span{display:flex;align-items:center;padding:0 14px;white-space:nowrap}
-.mbar .cost{background:var(--panel2);border:1px solid var(--line);border-right:0;color:var(--muted);border-radius:6px 0 0 6px}
-.mbar .gain{background:var(--gold);color:var(--ink);flex:1}
-.margin-card dl{margin-top:22px}
-.margin-card dl div{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
-.margin-card dt{color:var(--muted)}
-.margin-card dd{font-weight:600}
-.margin-card dl .gain dd{color:var(--green);font-size:22px}
-.margin-card .note{font-size:14px;color:var(--muted);margin-top:16px}
-@media(max-width:900px){.hero .wrap{grid-template-columns:1fr;gap:40px}.hero{padding-top:40px}}
-
-/* seções */
-section{padding:72px 0}
-.sec-head{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:32px;flex-wrap:wrap}
-.sec-head h2{font-size:clamp(34px,4.2vw,52px)}
-.sec-head p{color:var(--muted);max-width:48ch}
-
-/* catálogo */
-.toolbar{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px}
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{padding:8px 16px;border-radius:6px;border:1px solid var(--line);background:var(--panel);cursor:pointer;color:var(--muted)}
-.chip:hover{border-color:var(--gold-lo);color:var(--text)}
-.chip[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
-.search{height:42px;min-width:250px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:0 14px}
-.search::placeholder{color:var(--muted)}
-.status{font-size:15px;color:var(--muted);margin-bottom:20px;min-height:24px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.status .ok{color:var(--green);font-weight:500}
-.status button{background:none;border:0;color:var(--gold-hi);text-decoration:underline;cursor:pointer}
-
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-@media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr);gap:14px}}
-@media(max-width:520px){.grid{grid-template-columns:1fr}}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
-.card:hover{border-color:var(--gold-lo)}
-.photo{background:var(--panel2);aspect-ratio:4/3;display:grid;place-items:center;overflow:hidden}
-.photo img{width:100%;height:100%;object-fit:cover;display:block}
-.photo svg{width:78%;height:78%}
-.card .body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px;flex:1}
-.cat-name{font-size:14px;color:var(--muted)}
-.card h3{font-size:24px;line-height:1.1}
-.specs{font-size:14.5px;color:var(--muted);display:grid;gap:2px;margin:2px 0 6px}
-.specs b{color:var(--text);font-weight:500}
-.field{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14.5px;color:var(--muted)}
-.field select{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:120px}
-.price{margin-top:8px;padding-top:12px;border-top:1px solid var(--line);display:grid;gap:6px}
-.price .row{display:flex;justify-content:space-between;gap:10px;font-size:15px;align-items:baseline}
-.price .row span{color:var(--muted)}
-.price .row b{font-weight:600;text-align:right}
-.price .profit b{color:var(--green);font-size:17px}
-.price .profit em{font-style:normal;font-size:13px;margin-left:4px;color:var(--green)}
-.price .lk{color:var(--gold-hi);display:inline-flex;gap:6px;align-items:center}
-.price .lk svg{width:15px;height:15px}
-.pbar{height:6px;border-radius:3px;background:var(--gold);overflow:hidden;margin-top:2px}
-.pbar i{display:block;height:100%;background:#4B453A}
-.price .btn{margin-top:6px;padding:10px 14px;font-size:15px}
-.min{font-size:14px;color:var(--muted);margin-top:4px}
-.buy{display:flex;gap:10px;margin-top:10px;align-items:stretch}
-.step{display:flex;align-items:center;border:1px solid var(--line);border-radius:6px;background:var(--panel2)}
-.step button{width:34px;height:100%;min-height:42px;background:none;border:0;cursor:pointer;font-size:20px;color:var(--gold-hi)}
-.step button:disabled{opacity:.3;cursor:default}
-.step output{min-width:26px;text-align:center;font-weight:600}
-.buy .btn{flex:1;padding:10px 12px;font-size:15px}
-.empty{grid-column:1/-1;text-align:center;padding:56px 16px;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
-.empty .btn{margin-top:14px}
-
-/* como funciona */
-.how{background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
-.st{border-top:2px solid var(--gold);padding-top:22px}
-.st .n{font-family:var(--serif);font-size:44px;color:var(--gold-hi);line-height:1}
-.st h3{font-size:28px;margin:10px 0 8px}
-.st p{color:var(--muted);max-width:36ch}
-@media(max-width:800px){.steps{grid-template-columns:1fr;gap:28px}}
-
-/* cadastro */
-.signup{display:grid;grid-template-columns:1fr 1.1fr;gap:56px;align-items:start}
-.signup h2{font-size:clamp(34px,4.2vw,52px);margin-bottom:16px}
-.signup p{color:var(--muted);max-width:42ch}
-.form{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:28px;display:grid;gap:16px}
-.form label{display:block;font-size:15px;margin-bottom:6px;color:var(--muted)}
-.form input,.drawer-foot input,.dlg input{width:100%;height:46px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:0 14px}
-.form input:focus,.drawer-foot input:focus,.dlg input:focus{border-color:var(--gold)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.form .btn{width:100%}
-.form small{color:var(--muted);font-size:14px}
-.err{color:#F0A29A;font-size:14.5px;min-height:20px}
-@media(max-width:900px){.signup{grid-template-columns:1fr;gap:28px}.two{grid-template-columns:1fr}}
-
-/* rodapé */
-footer{border-top:1px solid var(--gold-lo);padding:48px 0 96px}
-footer .cols{display:grid;grid-template-columns:auto 1fr;gap:40px;align-items:center}
-footer img{width:190px;height:auto;border-radius:10px;border:1px solid var(--line);display:block}
-footer p{color:var(--muted)}
-footer p b{color:var(--text);font-weight:500}
-footer .legal{margin-top:24px;font-size:14px;color:var(--muted)}
-@media(max-width:640px){footer .cols{grid-template-columns:1fr}}
-
-/* gaveta do pedido */
-.veil{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:60;opacity:0;visibility:hidden;transition:opacity .25s,visibility 0s .25s}
-.veil.on{opacity:1;visibility:visible;transition:opacity .25s}
-.drawer{position:fixed;top:0;right:0;bottom:0;width:min(450px,100%);background:var(--panel);border-left:1px solid var(--gold-lo);z-index:70;display:flex;flex-direction:column;transform:translateX(100%);visibility:hidden;transition:transform .28s ease,visibility 0s .28s}
-.drawer.on{transform:none;visibility:visible;transition:transform .28s ease}
-.drawer-head{display:flex;justify-content:space-between;align-items:center;padding:20px 22px;border-bottom:1px solid var(--line)}
-.drawer-head h2{font-size:30px}
-.x{background:none;border:1px solid var(--line);border-radius:6px;width:38px;height:38px;cursor:pointer;font-size:20px;color:var(--muted)}
-.x:hover{color:var(--text);border-color:var(--gold-lo)}
-.drawer-body{flex:1;overflow:auto;padding:6px 22px}
-.line{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:16px 0;border-bottom:1px solid var(--line)}
-.line b{font-weight:500}
-.line .sub{font-size:14px;color:var(--muted)}
-.line .sub .g{color:var(--green)}
-.line .ctrl{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center}
-.line .rm{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:14.5px}
-.line .rm:hover{color:#F0A29A}
-.drawer-empty{padding:48px 6px;text-align:center;color:var(--muted)}
-.drawer-empty .btn{margin-top:14px}
-.drawer-foot{padding:18px 22px 22px;border-top:1px solid var(--line)}
-</style>
-</head>
-
-<body>
-
-  <div class="topbar">
-    <div class="wrap">
-      <span>Distribuidora T.R.A Santana · Atendimento para revendedores</span>
-      <span>WhatsApp: <b id="topWhatsapp"></b></span>
-    </div>
-  </div>
-
-  <header class="nav">
-    <div class="wrap">
-      <a class="brand" href="#inicio" aria-label="T.R.A Santana">
-        <img src="" alt="Logo T.R.A Santana" id="brandLogo" onerror="this.style.display='none'">
-        <div>
-          <b>T.R.A SANTANA</b>
-          <span>Móveis para revenda</span>
-        </div>
-      </a>
-
-      <nav class="links" aria-label="Navegação principal">
-        <a href="#inicio">Início</a>
-        <a href="#catalogo">Catálogo</a>
-        <a href="#como-funciona">Como funciona</a>
-        <a href="#cadastro">Cadastro</a>
-      </nav>
-
-      <div class="nav-actions">
-        <button class="btn btn-outline" type="button" id="openCart">
-          Pedido <span class="count" id="cartCount">0</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <main>
-    <section class="hero" id="inicio">
-      <div class="wrap">
-        <div>
-          <h1>Compre no atacado.<br>Venda com margem.</h1>
-          <p class="lead">
-            Catálogo de móveis para revendedores, com preço de atacado,
-            preço sugerido de venda e cálculo do seu lucro em cada peça.
-          </p>
-          <div class="cta">
-            <a class="btn btn-gold" href="#catalogo">Ver catálogo</a>
-            <a class="btn btn-outline" id="heroWhatsapp" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
-          </div>
-        </div>
-
-        <div class="margin-card">
-          <h2>Veja sua margem</h2>
-          <div class="mbar">
-            <span class="cost" id="heroCost">Atacado</span>
-            <span class="gain" id="heroGain">Seu lucro</span>
-          </div>
-          <dl>
-            <div>
-              <dt>Preço de atacado</dt>
-              <dd id="heroAtacado">R$ 0,00</dd>
-            </div>
-            <div>
-              <dt>Venda sugerida</dt>
-              <dd id="heroVarejo">R$ 0,00</dd>
-            </div>
-            <div class="gain">
-              <dt>Lucro bruto</dt>
-              <dd id="heroLucro">R$ 0,00</dd>
-            </div>
-          </dl>
-          <p class="note">Os valores são calculados automaticamente a partir dos dados da planilha.</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="catalogo">
-      <div class="wrap">
-        <div class="sec-head">
-          <div>
-            <h2>Catálogo</h2>
-            <p>Escolha os produtos, informe as quantidades e monte seu pedido.</p>
-          </div>
-        </div>
-
-        <div class="toolbar">
-          <div class="chips" id="categoryChips">
-            <button class="chip" type="button" data-category="Todos" aria-pressed="true">Todos</button>
-          </div>
-          <input class="search" id="searchInput" type="search" placeholder="Buscar produto..." aria-label="Buscar produto">
-        </div>
-
-        <div class="status" id="catalogStatus">
-          <span>Carregando catálogo...</span>
-        </div>
-
-        <div class="grid" id="productGrid"></div>
-      </div>
-    </section>
-
-    <section class="how" id="como-funciona">
-      <div class="wrap">
-        <div class="sec-head">
-          <div>
-            <h2>Como funciona</h2>
-            <p>Um processo simples para transformar seu catálogo em pedido.</p>
-          </div>
-        </div>
-
-        <div class="steps">
-          <div class="st">
-            <div class="n">01</div>
-            <h3>Escolha</h3>
-            <p>Veja os produtos disponíveis e confira preço, medidas, material e margem.</p>
-          </div>
-          <div class="st">
-            <div class="n">02</div>
-            <h3>Monte</h3>
-            <p>Defina a quantidade de cada peça e acompanhe o total do pedido.</p>
-          </div>
-          <div class="st">
-            <div class="n">03</div>
-            <h3>Envie</h3>
-            <p>Depois de confirmar seus dados, envie o pedido diretamente pelo WhatsApp.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="cadastro">
-      <div class="wrap signup">
-        <div>
-          <h2>Área do revendedor</h2>
-          <p>
-            Informe seus dados para liberar o pedido. O código de revendedor
-            é utilizado para validar o acesso ao envio.
-          </p>
-        </div>
-
-        <form class="form" id="signupForm">
-          <div class="two">
-            <div>
-              <label for="nome">Nome</label>
-              <input id="nome" name="nome" required autocomplete="name">
-            </div>
-            <div>
-              <label for="telefone">WhatsApp</label>
-              <input id="telefone" name="telefone" required autocomplete="tel" placeholder="(00) 00000-0000">
-            </div>
-          </div>
-
-          <div class="two">
-            <div>
-              <label for="cidade">Cidade</label>
-              <input id="cidade" name="cidade" required autocomplete="address-level2">
-            </div>
-            <div>
-              <label for="codigo">Código do revendedor</label>
-              <input id="codigo" name="codigo" required autocomplete="off">
-            </div>
-          </div>
-
-          <div class="err" id="formError" aria-live="polite"></div>
-          <button class="btn btn-gold" type="submit">Continuar com o pedido</button>
-          <small>Se ainda não possui o código, fale conosco pelo WhatsApp.</small>
-        </form>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="wrap">
-      <div class="cols">
-        <div>
-          <h2>T.R.A Santana</h2>
-          <p>Distribuidora de móveis para revendedores.</p>
-        </div>
-        <div>
-          <p><b>CNPJ:</b> <span id="footerCnpj"></span></p>
-          <p><b>Endereço:</b> <span id="footerEndereco"></span></p>
-          <p><b>WhatsApp:</b> <span id="footerWhatsapp"></span></p>
-        </div>
-      </div>
-      <p class="legal">Preços e disponibilidade sujeitos à atualização na planilha de catálogo.</p>
-    </div>
-  </footer>
-
-  <div class="veil" id="cartVeil"></div>
-
-  <aside class="drawer" id="cartDrawer" aria-label="Pedido" aria-hidden="true">
-    <div class="drawer-head">
-      <h2>Seu pedido</h2>
-      <button class="x" type="button" id="closeCart" aria-label="Fechar pedido">×</button>
-    </div>
-    <div class="drawer-body" id="cartBody">
-      <div class="drawer-empty">
-        Seu pedido está vazio.
-        <br>
-        <button class="btn btn-outline" type="button" id="emptyGoCatalog">Ver catálogo</button>
-      </div>
-    </div>
-    <div class="drawer-foot">
-      <div class="field">
-        <span>Total</span>
-        <b id="cartTotal">R$ 0,00</b>
-      </div>
-      <div class="field" style="margin-top:8px">
-        <span>Lucro bruto estimado</span>
-        <b id="cartProfit">R$ 0,00</b>
-      </div>
-      <button class="btn btn-gold" type="button" id="checkoutBtn" style="width:100%;margin-top:14px" disabled>
-        Enviar pedido pelo WhatsApp
-      </button>
-    </div>
-  </aside>
-
-  <script>
   (() => {
     "use strict";
 
-    const $ = (selector, root = document) => root.querySelector(selector);
-    const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+    const $ = (selector, root = document) => root.querySelector(selector);     const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
     const state = {
       categoria: "Todos",
@@ -595,25 +138,12 @@ footer .legal{margin-top:24px;font-size:14px;color:var(--muted)}
           escapar(cat) + '" aria-pressed="false">' + escapar(cat) + '</button>'
         ).join("");
 
-      $$(".chip", container).forEach(btn => {
-        btn.addEventListener("click", () => {
-          state.categoria = btn.dataset.category;
-          $$(".chip", container).forEach(x =>
+      $$(".chip", container).forEach(btn => {         btn.addEventListener("click", () => {           state.categoria = btn.dataset.category;           $$
+(".chip", container).forEach(x =>
             x.setAttribute("aria-pressed", x === btn ? "true" : "false")
           );
           renderizarProdutos(PRODUTOS);
         });
-      });
-    }
-
-    function produtosVisiveis() {
-      const termo = state.busca.toLowerCase().trim();
-
-      return PRODUTOS.filter(p => {
-        const categoriaOk = state.categoria === "Todos" || p.categoria === state.categoria;
-        const texto = [p.nome, p.categoria, p.material, p.medidas].join(" ").toLowerCase();
-        const buscaOk = !termo || texto.includes(termo);
-        return categoriaOk && buscaOk;
       });
     }
 
@@ -633,8 +163,7 @@ footer .legal{margin-top:24px;font-size:14px;color:var(--muted)}
         $("#clearFilters")?.addEventListener("click", () => {
           state.categoria = "Todos";
           state.busca = "";
-          $("#searchInput").value = "";
-          $$(".chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.category === "Todos" ? "true" : "false"));
+          $("#searchInput").value = "";           $$(".chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.category === "Todos" ? "true" : "false"));
           renderizarProdutos(PRODUTOS);
         });
         return;
@@ -695,9 +224,7 @@ footer .legal{margin-top:24px;font-size:14px;color:var(--muted)}
 
           if (btn.dataset.action === "plus") nova = atual + produto.minimo;
           if (btn.dataset.action === "minus") nova = Math.max(0, atual - produto.minimo);
-          if (btn.dataset.action === "add") {
-            nova = atual || produto.minimo;
-          }
+          if (btn.dataset.action === "add") nova = atual || produto.minimo;
 
           if (nova > 0) state.carrinho.set(id, { produto, qtd: nova });
           else state.carrinho.delete(id);
@@ -734,12 +261,24 @@ footer .legal{margin-top:24px;font-size:14px;color:var(--muted)}
       return { total, lucro, unidades };
     }
 
+    function abrirCarrinho() {
+      $("#cartVeil").classList.add("on");
+      $("#cartDrawer").classList.add("on");
+      $("#cartDrawer").setAttribute("aria-hidden", "false");
+    }
+
+    function fecharCarrinho() {
+      $("#cartVeil").classList.remove("on");
+      $("#cartDrawer").classList.remove("on");
+      $("#cartDrawer").setAttribute("aria-hidden", "true");
+    }
+
     function atualizarCarrinho() {
       const resumo = resumoCarrinho();
       $("#cartCount").textContent = resumo.unidades;
       $("#cartTotal").textContent = dinheiro(resumo.total);
       $("#cartProfit").textContent = dinheiro(resumo.lucro);
-      $("#checkoutBtn").disabled = resumo.unidades === 0 || !state.revendedor;
+      $("#checkoutBtn").disabled = resumo.unidades === 0;
 
       const body = $("#cartBody");
 
@@ -750,161 +289,115 @@ footer .legal{margin-top:24px;font-size:14px;color:var(--muted)}
             <br>
             <button class="btn btn-outline" type="button" id="emptyGoCatalog">Ver catálogo</button>
           </div>`;
-        $("#emptyGoCatalog").addEventListener("click", () => {
+        $("#emptyGoCatalog")?.addEventListener("click", () => {
           fecharCarrinho();
-          $("#catalogo").scrollIntoView({ behavior: "smooth" });
+          $("#catalogo")?.scrollIntoView({ behavior: "smooth" });
         });
         return;
       }
 
       body.innerHTML = [...state.carrinho.values()].map(({ produto, qtd }) => {
-        const total = produto.atacado * qtd;
-        const lucro = Math.max(0, produto.varejo - produto.atacado) * qtd;
-
+        const subtotal = produto.atacado * qtd;
+        const lucroUnitario = Math.max(0, produto.varejo - produto.atacado);
         return `
           <div class="line">
             <div>
               <b>${escapar(produto.nome)}</b>
-              <div class="sub">${qtd} × ${dinheiro(produto.atacado)}</div>
-              <div class="sub">Lucro: <span class="g">${dinheiro(lucro)}</span></div>
+              <div class="sub">${qtd}x ${dinheiro(produto.atacado)} <span class="g">(Lucro: ${dinheiro(lucroUnitario * qtd)})</span></div>
             </div>
-            <strong>${dinheiro(total)}</strong>
+            <b>${dinheiro(subtotal)}</b>
             <div class="ctrl">
-              <div class="step">
-                <button type="button" data-cart="minus" data-id="${escapar(produto.id)}">−</button>
-                <output>${qtd}</output>
-                <button type="button" data-cart="plus" data-id="${escapar(produto.id)}">+</button>
-              </div>
-              <button class="rm" type="button" data-cart="remove" data-id="${escapar(produto.id)}">Remover</button>
+              <button class="rm" type="button" data-remove="${escapar(produto.id)}">Remover</button>
             </div>
-          </div>`;
+          </div>
+        `;
       }).join("");
 
-      $$("[data-cart]", body).forEach(btn => {
+      $$("[data-remove]", body).forEach(btn => {
         btn.addEventListener("click", () => {
-          const id = btn.dataset.id;
-          const item = state.carrinho.get(id);
-          if (!item) return;
-
-          if (btn.dataset.cart === "remove") {
-            state.carrinho.delete(id);
-          } else if (btn.dataset.cart === "plus") {
-            item.qtd += item.produto.minimo;
-          } else if (btn.dataset.cart === "minus") {
-            item.qtd -= item.produto.minimo;
-            if (item.qtd <= 0) state.carrinho.delete(id);
-          }
-
+          state.carrinho.delete(btn.dataset.remove);
           atualizarCarrinho();
           renderizarProdutos(PRODUTOS);
         });
       });
     }
 
-    function abrirCarrinho() {
-      $("#cartDrawer").classList.add("on");
-      $("#cartVeil").classList.add("on");
-      $("#cartDrawer").setAttribute("aria-hidden", "false");
-      document.body.style.overflow = "hidden";
-    }
-
-    function fecharCarrinho() {
-      $("#cartDrawer").classList.remove("on");
-      $("#cartVeil").classList.remove("on");
-      $("#cartDrawer").setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
-    }
-
-    function abrirWhatsApp() {
-      if (!state.revendedor) {
-        $("#cadastro").scrollIntoView({ behavior: "smooth" });
-        $("#formError").textContent = "Preencha o cadastro para liberar o envio do pedido.";
-        return;
+    function inicializar() {
+      // Preenche os dados globais de CONFIG no topo e rodapé
+      if (typeof CONFIG !== "undefined") {
+        $("#topWhatsapp").textContent = CONFIG.whatsappExibir;
+        $("#footerCnpj").textContent = CONFIG.cnpj;
+        $("#footerEndereco").textContent = CONFIG.endereco;
+        $("#footerWhatsapp").textContent = CONFIG.whatsappExibir;
+        $("#heroWhatsapp").href = `https://wa.me/${CONFIG.whatsapp}`;
       }
 
-      if (!state.carrinho.size) return;
+      // Input de Busca
+      $("#searchInput")?.addEventListener("input", (e) => {
+        state.busca = e.target.value;
+        renderizarProdutos(PRODUTOS);
+      });
 
-      const linhas = [
-        "Olá, T.R.A Santana!",
-        "",
-        "Gostaria de fazer o seguinte pedido:",
-        ""
-      ];
+      // Handlers da Gaveta de Pedido
+      $("#openCart")?.addEventListener("click", abrirCarrinho);
+      $("#closeCart")?.addEventListener("click", fecharCarrinho);
+      $("#cartVeil")?.addEventListener("click", fecharCarrinho);
 
-      for (const { produto, qtd } of state.carrinho.values()) {
-        linhas.push(
-          `• ${produto.nome} — ${qtd} un. — ${dinheiro(produto.atacado * qtd)}`
-        );
-      }
+      // Handler do Formulário de Cadastro / Envio WhatsApp
+      $("#signupForm")?.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const errEl = $("#formError");
+        errEl.textContent = "";
 
-      const resumo = resumoCarrinho();
+        const codigo = $("#codigo").value.trim();
+        if (codigo !== CONFIG.codigoRevendedor) {
+          errEl.textContent = "Código de revendedor inválido. Solicite via WhatsApp.";
+          return;
+        }
 
-      linhas.push(
-        "",
-        `Total: ${dinheiro(resumo.total)}`,
-        `Lucro bruto estimado: ${dinheiro(resumo.lucro)}`,
-        "",
-        "Dados do revendedor:",
-        `Nome: ${state.revendedor.nome}`,
-        `WhatsApp: ${state.revendedor.telefone}`,
-        `Cidade: ${state.revendedor.cidade}`
-      );
+        state.revendedor = {
+          nome: $("#nome").value.trim(),
+          telefone: $("#telefone").value.trim(),
+          cidade: $("#cidade").value.trim()
+        };
 
-      const url = "https://wa.me/" + CONFIG.whatsapp + "?text=" +
-        encodeURIComponent(linhas.join("\n"));
+        alert("Cadastro validado com sucesso! Agora você pode finalizar o pedido.");
+        abrirCarrinho();
+      });
 
-      window.open(url, "_blank", "noopener");
+      // Botão Enviar Pedido via WhatsApp
+      $("#checkoutBtn")?.addEventListener("click", () => {
+        if (!state.revendedor) {
+          alert("Por favor, preencha a Área do Revendedor no fim da página antes de enviar o pedido.");
+          fecharCarrinho();
+          $("#cadastro")?.scrollIntoView({ behavior: "smooth" });
+          return;
+        }
+
+        let msg = `*NOVO PEDIDO - ${CONFIG.nome}*\n\n`;
+        msg += `*Revendedor:* ${state.revendedor.nome}\n`;
+        msg += `*WhatsApp:* ${state.revendedor.telefone}\n`;
+        msg += `*Cidade:* ${state.revendedor.cidade}\n\n`;
+        msg += `*ITENS DO PEDIDO:*\n`;
+
+        for (const { produto, qtd } of state.carrinho.values()) {
+          msg += `• ${qtd}x ${produto.nome} - ${dinheiro(produto.atacado * qtd)}\n`;
+        }
+
+        const { total, lucro } = resumoCarrinho();
+        msg += `\n*Total Atacado:* ${dinheiro(total)}`;
+        msg += `\n*Lucro Estimado:* ${dinheiro(lucro)}`;
+
+        const url = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
+        window.open(url, "_blank");
+      });
+
+      // Carrega os dados da planilha
+      carregarCatalogoSeguro();
     }
 
-    $("#searchInput").addEventListener("input", e => {
-      state.busca = e.target.value;
-      renderizarProdutos(PRODUTOS);
-    });
-
-    $("#openCart").addEventListener("click", abrirCarrinho);
-    $("#closeCart").addEventListener("click", fecharCarrinho);
-    $("#cartVeil").addEventListener("click", fecharCarrinho);
-    $("#checkoutBtn").addEventListener("click", abrirWhatsApp);
-
-    $("#heroWhatsapp").href =
-      "https://wa.me/" + CONFIG.whatsapp +
-      "?text=" + encodeURIComponent("Olá! Gostaria de informações sobre o catálogo da T.R.A Santana.");
-
-    $("#topWhatsapp").textContent = CONFIG.whatsappExibir;
-    $("#footerWhatsapp").textContent = CONFIG.whatsappExibir;
-    $("#footerCnpj").textContent = CONFIG.cnpj;
-    $("#footerEndereco").textContent = CONFIG.endereco;
-
-    $("#signupForm").addEventListener("submit", e => {
-      e.preventDefault();
-
-      const nome = $("#nome").value.trim();
-      const telefone = $("#telefone").value.trim();
-      const cidade = $("#cidade").value.trim();
-      const codigo = $("#codigo").value.trim();
-
-      $("#formError").textContent = "";
-
-      if (codigo !== CONFIG.codigoRevendedor) {
-        $("#formError").textContent = "Código de revendedor inválido.";
-        return;
-      }
-
-      state.revendedor = { nome, telefone, cidade };
-      $("#formError").textContent = "";
-      atualizarCarrinho();
-      abrirCarrinho();
-    });
-
-    document.addEventListener("keydown", e => {
-      if (e.key === "Escape") fecharCarrinho();
-    });
-
-    atualizarCarrinho();
-    carregarCatalogoSeguro();
+    document.addEventListener("DOMContentLoaded", inicializar);
   })();
   </script>
-
 </body>
-
 </html>
