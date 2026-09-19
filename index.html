@@ -39,17 +39,20 @@ async function carregarPlanilhaDoGoogle() {
     const cabecalhos = linhas[0].split(',').map(c => c.trim().toLowerCase());
     
     PRODUTOS = linhas.slice(1).map(linha => {
-      // Separa os valores por vírgula corretamente (ignorando vírgulas dentro de textos)
       const valores = linha.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, '').trim());
       let obj = {};
       cabecalhos.forEach((cab, i) => obj[cab] = valores[i]);
       
+      // Converte a coluna foto em uma lista se houver múltiplos links separados por ";"
+      const fotosLista = obj.foto ? obj.foto.split(';').map(f => f.trim()) : [];
+
       return {
         id: obj.id || (obj.nome ? obj.nome.replace(/\s+/g, '-').toLowerCase() : 'id-gerado'),
         nome: obj.nome || '',
         categoria: obj.categoria || 'Geral',
         tipo: obj.tipo || 'sofa',
-        foto: obj.foto || '',
+        foto: fotosLista[0] || '', // Primeira foto como principal para a capa
+        galeria: fotosLista,       // Lista completa de fotos (capa, medidas, etc.)
         medidas: obj.medidas || '',
         material: obj.material || '',
         cores: obj.cores ? obj.cores.split(';') : [],
@@ -59,7 +62,6 @@ async function carregarPlanilhaDoGoogle() {
       };
     });
 
-    // Atualiza a tela automaticamente assim que os dados chegarem da planilha
     if (typeof render === 'function') render();
     if (typeof init === 'function') init();
     
