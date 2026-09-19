@@ -47,23 +47,23 @@ async function carregarPlanilhaDoGoogle() {
       const fotosLista = obj.foto ? obj.foto.split(';').map(f => f.trim()) : [];
 
       return {
-        id: obj.id || (obj.nome ? obj.nome.replace(/\s+/g, '-').toLowerCase() : 'id-gerado'),
-        nome: obj.nome || '',
-        categoria: obj.categoria || 'Geral',
-        foto: fotosLista[0] || '', // Primeira foto como principal para a capa
-        galeria: fotosLista,       // Lista completa de fotos (capa, medidas, etc.)
-        medidas: obj.medidas || '',
-        material: obj.material || '',
-        portas: obj.portas || '',
-        gavetas: obj.gavetas || '',
-        espelho: obj.espelho || '',
-        estoque: obj.estoque || '',
-        cores: obj.cores ? obj.cores.split(';') : [],
-        descricao: obj.descricao || '',
-        minimo: parseInt(obj.minimo) || 1,
-        varejo: parseFloat(obj.varejo) || 0,
-        atacado: parseFloat(obj.atacado) || 0
-      };
+  id: obj.id || (obj.nome ? obj.nome.replace(/\s+/g, '-').toLowerCase() : 'id-gerado'),
+  nome: obj.nome || '',
+  categoria: obj.categoria || 'Geral',
+  foto: fotosLista[0] || '',
+  galeria: fotosLista,
+  medidas: obj.medidas || '',
+  material: obj.material || '',
+  cores: obj.cores ? obj.cores.split(';').map(c => c.trim()) : [],
+  portas: obj.portas || '',
+  gavetas: obj.gavetas || '',
+  espelho: obj.espelho || '',
+  estoque: obj.estoque || '',
+  descricao: obj.descricao || obj['descrição'] || '',
+  minimo: parseInt(obj.minimo) || 1,
+  varejo: parseFloat(obj.varejo) || 0,
+  atacado: parseFloat(obj.atacado) || 0
+};
     });
 
     document.dispatchEvent(new CustomEvent('tra:produtos-carregados'));
@@ -74,6 +74,34 @@ async function carregarPlanilhaDoGoogle() {
 }
 
 carregarPlanilhaDoGoogle();
+     // Função para renderizar a janela de detalhes do produto
+function abrirDetalhe(p) {
+  // Função auxiliar para evitar problemas com caracteres especiais
+  const esc = (txt) => String(txt || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // Preenche a ficha técnica dinamicamente
+  const techElem = document.querySelector('#detail-tech');
+  if (techElem) {
+    techElem.innerHTML = `<h3>Ficha técnica</h3><dl>
+      <div><dt>Código</dt><dd>${esc(p.id)}</dd></div>
+      <div><dt>Categoria</dt><dd>${esc(p.categoria || 'Geral')}</dd></div>
+      <div><dt>Material</dt><dd>${esc(p.material || 'Não informado')}</dd></div>
+      <div><dt>Medidas</dt><dd>${esc(p.medidas || 'Não informado')}</dd></div>
+      <div><dt>Cores disponíveis</dt><dd>${esc((p.cores || []).join(', ') || 'Consultar')}</dd></div>
+
+      ${p.portas ? `<div><dt>Portas</dt><dd>${esc(p.portas)}</dd></div>` : ''}
+      ${p.gavetas ? `<div><dt>Gavetas</dt><dd>${esc(p.gavetas)}</dd></div>` : ''}
+      ${p.espelho ? `<div><dt>Espelho</dt><dd>${esc(p.espelho)}</dd></div>` : ''}
+      ${p.estoque ? `<div><dt>Estoque</dt><dd>${esc(p.estoque)}</dd></div>` : ''}
+
+      <div><dt>Pedido mínimo</dt><dd>${p.minimo} unidade(s)</dd></div>
+    </dl>`;
+  }
+
+  // Abre o modal de detalhes
+  const dlg = document.querySelector('dialog.product-dlg');
+  if (dlg) dlg.showModal();
+}
 </script>
 <!-- ================== FIM DA ÁREA DE EDIÇÃO ================== -->
 
