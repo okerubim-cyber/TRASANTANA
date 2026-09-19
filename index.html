@@ -63,18 +63,7 @@ async function carregarPlanilhaDoGoogle() {
   minimo: parseInt(obj.minimo) || 1,
   varejo: parseFloat(obj.varejo) || 0,
   atacado: parseFloat(obj.atacado) || 0
-};
-    });
-
-    document.dispatchEvent(new CustomEvent('tra:produtos-carregados'));
-    
-  } catch (erro) {
-    console.error("Erro ao puxar dados da planilha:", erro);
-  }
-}
-
-carregarPlanilhaDoGoogle();
-     // Função para renderizar a janela de detalhes do produto
+// Função para renderizar a janela de detalhes do produto
 function abrirDetalhe(p) {
   // Função auxiliar para evitar problemas com caracteres especiais
   const esc = (txt) => String(txt || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -86,6 +75,31 @@ function abrirDetalhe(p) {
       <div><dt>Código</dt><dd>${esc(p.id)}</dd></div>
       <div><dt>Categoria</dt><dd>${esc(p.categoria || 'Geral')}</dd></div>
       <div><dt>Material</dt><dd>${esc(p.material || 'Não informado')}</dd></div>
+      <div><dt>Medidas</dt><dd>${esc(p.medidas || 'Não informado')}</dd></div>
+      <div><dt>Cores disponíveis</dt><dd>${esc((p.cores || []).join(', ') || 'Consultar')}</dd></div>
+
+      ${p.portas ? `<div><dt>Portas</dt><dd>${esc(p.portas)}</dd></div>` : ''}
+      ${p.gavetas ? `<div><dt>Gavetas</dt><dd>${esc(p.gavetas)}</dd></div>` : ''}
+      ${p.espelho ? `<div><dt>Espelho</dt><dd>${esc(p.espelho)}</dd></div>` : ''}
+      ${p.estoque ? `<div><dt>Estoque</dt><dd>${esc(p.estoque)}</dd></div>` : ''}
+
+      <div><dt>Pedido mínimo</dt><dd>${p.minimo} unidade(s)</dd></div>
+    </dl>`;
+  }
+
+  // Preenche a Descrição dinamicamente (se existir)
+  const descElem = document.querySelector('#detail-description');
+  if (descElem) {
+    descElem.innerHTML = p.descricao ? `
+      <h3>Descrição</h3>
+      <p>${esc(p.descricao)}</p>
+    ` : '';
+  }
+
+  // Abre o modal de detalhes
+  const dlg = document.querySelector('dialog.product-dlg');
+  if (dlg) dlg.showModal();
+}
       <div><dt>Medidas</dt><dd>${esc(p.medidas || 'Não informado')}</dd></div>
       <div><dt>Cores disponíveis</dt><dd>${esc((p.cores || []).join(', ') || 'Consultar')}</dd></div>
 
@@ -373,6 +387,22 @@ dialog.product-dlg::backdrop{
 .measure-item span{display:block;font-size:12px;color:var(--muted);margin-top:3px}
 .measure-raw{font-size:14px;color:var(--muted);margin-top:9px}
 .tech{border-top:1px solid var(--line);margin-top:20px;padding-top:18px}
+     .detail-description{
+  border-top:1px solid var(--line);
+  margin-top:20px;
+  padding-top:18px;
+}
+
+.detail-description h3{
+  font-size:25px;
+  margin-bottom:10px;
+}
+
+.detail-description p{
+  color:var(--muted);
+  font-size:15px;
+  line-height:1.6;
+}
 .tech h3{font-size:25px;margin-bottom:10px}
 .tech dl{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
 .tech dl div{padding:9px 0;border-bottom:1px solid var(--line)}
@@ -665,6 +695,7 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
       </div>
       <div id="detail-summary"></div>
       <div class="measure-box" id="detail-measures"></div>
+     <div class="detail-description" id="detail-description"></div>
       <div class="tech" id="detail-tech"></div>
       <div class="detail-actions">
         <button class="btn btn-outline" id="detail-compartilhar" type="button">Compartilhar produto</button>
