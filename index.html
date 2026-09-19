@@ -61,8 +61,7 @@ async function carregarPlanilhaDoGoogle() {
       };
     });
 
-    if (typeof render === 'function') render();
-    if (typeof init === 'function') init();
+    document.dispatchEvent(new CustomEvent('tra:produtos-carregados'));
     
   } catch (erro) {
     console.error("Erro ao puxar dados da planilha:", erro);
@@ -144,6 +143,11 @@ section{padding:72px 0}
 
 /* catálogo */
 .toolbar{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;width:100%}
+.filter{height:42px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:0 12px;color:var(--muted);min-width:150px}
+.filter:focus{border-color:var(--gold)}
+.filter-label{font-size:13px;color:var(--muted);margin-right:-2px}
+.result-count{font-size:14px;color:var(--muted);margin-left:auto}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
 .chip{padding:8px 16px;border-radius:6px;border:1px solid var(--line);background:var(--panel);cursor:pointer;color:var(--muted)}
 .chip:hover{border-color:var(--gold-lo);color:var(--text)}
@@ -159,9 +163,13 @@ section{padding:72px 0}
 @media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr);gap:14px}}
 @media(max-width:520px){.grid{grid-template-columns:1fr}}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.card h3{cursor:pointer}
+.card .photo button{position:absolute;inset:0;border:0;background:none;cursor:pointer}
 .card:hover{border-color:var(--gold-lo)}
-.photo{background:var(--panel2);aspect-ratio:4/3;display:grid;place-items:center;overflow:hidden}
-.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.photo{background:var(--panel2);aspect-ratio:4/5;display:grid;place-items:center;overflow:hidden;cursor:pointer;position:relative}
+.photo img{width:100%;height:100%;object-fit:contain;display:block;padding:10px}
+.photo::after{content:"Ver detalhes";position:absolute;right:10px;bottom:10px;background:rgba(10,10,9,.82);border:1px solid var(--gold-lo);color:var(--gold-hi);font-size:12px;padding:5px 8px;border-radius:5px;opacity:0;transform:translateY(4px);transition:.15s}
+.card:hover .photo::after,.photo:focus-within::after{opacity:1;transform:none}
 .photo svg{width:78%;height:78%}
 .card .body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px;flex:1}
 .cat-name{font-size:14px;color:var(--muted)}
@@ -222,6 +230,41 @@ footer p{color:var(--muted)}
 footer p b{color:var(--text);font-weight:500}
 footer .legal{margin-top:24px;font-size:14px;color:var(--muted)}
 @media(max-width:640px){footer .cols{grid-template-columns:1fr}}
+
+/* detalhes do produto */
+dialog.product-dlg{margin:auto;background:var(--panel);color:var(--text);border:1px solid var(--gold-lo);border-radius:16px;padding:0;width:min(1000px,calc(100% - 24px));max-height:92vh;overflow:hidden}
+dialog.product-dlg::backdrop{background:rgba(0,0,0,.78)}
+.product-dlg .detail{display:grid;grid-template-columns:1.05fr .95fr;max-height:92vh}
+.detail-gallery{background:var(--panel2);padding:22px;display:flex;flex-direction:column;gap:12px;min-height:520px}
+.detail-main-photo{flex:1;min-height:380px;display:grid;place-items:center;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.detail-main-photo img{width:100%;height:100%;max-height:560px;object-fit:contain;padding:16px}
+.detail-thumbs{display:flex;gap:8px;overflow:auto;padding-bottom:2px}
+.detail-thumb{width:72px;height:72px;flex:0 0 72px;border:1px solid var(--line);border-radius:7px;background:var(--panel);padding:4px;cursor:pointer}
+.detail-thumb[aria-selected="true"]{border-color:var(--gold)}
+.detail-thumb img{width:100%;height:100%;object-fit:contain}
+.detail-info{padding:28px;overflow:auto}
+.detail-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.detail-info h2{font-size:clamp(32px,4vw,48px);margin-bottom:6px}
+.detail-cat{color:var(--muted);font-size:14px}
+.detail-actions{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+.detail-actions .btn{flex:1;min-width:150px}
+.measure-box{margin:20px 0;padding:16px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}
+.measure-title{font-size:14px;color:var(--muted);margin-bottom:10px}
+.measures-visual{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.measure-item{padding:12px 8px;text-align:center;border:1px solid var(--line);border-radius:7px}
+.measure-item b{display:block;font-family:var(--serif);font-size:25px;color:var(--gold-hi);line-height:1.05}
+.measure-item span{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.measure-raw{font-size:14px;color:var(--muted);margin-top:9px}
+.tech{border-top:1px solid var(--line);margin-top:20px;padding-top:18px}
+.tech h3{font-size:25px;margin-bottom:10px}
+.tech dl{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+.tech dl div{padding:9px 0;border-bottom:1px solid var(--line)}
+.tech dt{font-size:13px;color:var(--muted)}
+.tech dd{font-weight:500;margin-top:2px}
+.detail-close{background:none;border:1px solid var(--line);border-radius:6px;width:38px;height:38px;cursor:pointer;font-size:20px;color:var(--muted);flex:0 0 auto}
+.detail-close:hover{color:var(--text);border-color:var(--gold-lo)}
+@media(max-width:800px){.product-dlg .detail{grid-template-columns:1fr;max-height:92vh}.detail-gallery{min-height:330px}.detail-main-photo{min-height:270px}.detail-info{padding:22px}.tech dl{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.filter{min-width:0;flex:1}.result-count{width:100%;margin-left:0}.detail-gallery{padding:12px}.detail-info{padding:18px}.detail-main-photo{min-height:240px}.measures-visual{grid-template-columns:1fr 1fr}.detail-actions .btn{min-width:0}}
 
 /* gaveta do pedido */
 .veil{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:60;opacity:0;visibility:hidden;transition:opacity .25s,visibility 0s .25s}
@@ -342,6 +385,18 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
     <div class="toolbar">
       <div class="chips" id="chips" role="group" aria-label="Filtrar por categoria"></div>
       <input class="search" id="busca" type="search" placeholder="Buscar produto" aria-label="Buscar produto">
+      <div class="filters" aria-label="Filtros adicionais">
+        <span class="filter-label">Filtrar:</span>
+        <select class="filter" id="filtro-cor" aria-label="Filtrar por cor"><option value="Todas">Todas as cores</option></select>
+        <select class="filter" id="filtro-ordem" aria-label="Ordenar produtos">
+          <option value="padrao">Ordem do catálogo</option>
+          <option value="nome">Nome A–Z</option>
+          <option value="menor-preco">Menor preço sugerido</option>
+          <option value="maior-preco">Maior preço sugerido</option>
+        </select>
+        <button class="chip" id="limpar-filtros" type="button">Limpar filtros</button>
+        <span class="result-count" id="result-count"></span>
+      </div>
     </div>
     <div class="status" id="status"></div>
     <div class="grid" id="grid"></div>
@@ -411,6 +466,30 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
   </div>
 </aside>
 
+<!-- detalhes do produto -->
+<dialog class="product-dlg" id="produto-dlg" aria-label="Detalhes do produto">
+  <div class="detail">
+    <div class="detail-gallery">
+      <div class="detail-main-photo" id="detail-main-photo"></div>
+      <div class="detail-thumbs" id="detail-thumbs" role="listbox" aria-label="Fotos do produto"></div>
+    </div>
+    <div class="detail-info">
+      <div class="detail-top">
+        <div><div class="detail-cat" id="detail-cat"></div><h2 id="detail-title"></h2></div>
+        <button class="detail-close" id="detail-fechar" type="button" aria-label="Fechar detalhes">×</button>
+      </div>
+      <div id="detail-summary"></div>
+      <div class="measure-box" id="detail-measures"></div>
+      <div class="tech" id="detail-tech"></div>
+      <div class="detail-actions">
+        <button class="btn btn-outline" id="detail-compartilhar" type="button">Compartilhar produto</button>
+        <a class="btn btn-gold" id="detail-whatsapp" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
+      </div>
+      <div class="buy" id="detail-buy"></div>
+    </div>
+  </div>
+</dialog>
+
 <!-- diálogo do código -->
 <dialog class="dlg" id="dlg">
   <h2>Acesso de revendedor</h2>
@@ -444,7 +523,7 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
     del(k){ try { localStorage.removeItem(k); } catch(e){} }
   };
 
-  const state = { cat:'Todos', q:'', unlocked: !usaCodigo, cart:[], sel:{} };
+  const state = { cat:'Todos', q:'', unlocked: !usaCodigo, cart:[], sel:{}, cor:'Todas', ordem:'padrao', detalhe:null };
   if (usaCodigo && store.get('tra_acesso') === CONFIG.codigoRevendedor.toLowerCase()) state.unlocked = true;
   try {
     const saved = JSON.parse(store.get('tra_pedido') || '[]');
@@ -461,14 +540,53 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
   $('#pedir-cod').href = wa(`Olá, ${CONFIG.nome}! Quero receber meu código de acesso de revendedor.`);
   if (!usaCodigo) $('#btn-acesso').hidden = true;
 
-  /* categorias */
-  const cats = ['Todos', ...new Set(PRODUTOS.map(p => p.categoria))];
-  $('#chips').innerHTML = cats.map(c => `<button class="chip" type="button" data-cat="${esc(c)}" aria-pressed="${c===state.cat}">${esc(c)}</button>`).join('');
+  /* categorias e filtros */
+  function renderFiltros(){
+    const cats = ['Todos', ...new Set(PRODUTOS.map(p => p.categoria).filter(Boolean))];
+    $('#chips').innerHTML = cats.map(c => `<button class="chip" type="button" data-cat="${esc(c)}" aria-pressed="${c===state.cat}">${esc(c)}</button>`).join('');
+    const todasCores = [...new Set(PRODUTOS.flatMap(p => p.cores || []).map(c => c.trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b,'pt-BR'));
+    $('#filtro-cor').innerHTML = `<option value="Todas">Todas as cores</option>` + todasCores.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    $('#filtro-cor').value = state.cor;
+    $('#filtro-ordem').value = state.ordem;
+  }
+  renderFiltros();
 
   function photo(p){
     const ph = `<svg viewBox="0 0 200 140" role="img" aria-label="${esc(p.nome)}"><use href="#d-${esc(p.tipo)}"/></svg>`;
     if (!p.foto) return ph;
     return `<img src="${esc(p.foto)}" alt="${esc(p.nome)}" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false">` + ph.replace('<svg ', '<svg hidden ');
+  }
+
+  function parseMedidas(txt){
+    const nums = String(txt || '').replace(/,/g,'.').match(/\d+(?:\.\d+)?/g) || [];
+    if (nums.length < 3) return null;
+    const unitMatch = String(txt || '').match(/(?:cm|mm|m)\b/i);
+    const unit = unitMatch ? unitMatch[0].toLowerCase() : 'cm';
+    return { largura: nums[0], altura: nums[1], profundidade: nums[2], unit };
+  }
+
+  function medidasHTML(p){
+    const d = parseMedidas(p.medidas);
+    if (!d) return `<div class="measure-box"><div class="measure-title">Medidas</div><div class="measure-raw">${esc(p.medidas || 'Não informado')}</div></div>`;
+    return `<div class="measure-box"><div class="measure-title">Medidas do produto</div><div class="measures-visual">
+      <div class="measure-item"><b>${esc(d.largura)}</b><span>Largura (${esc(d.unit)})</span></div>
+      <div class="measure-item"><b>${esc(d.altura)}</b><span>Altura (${esc(d.unit)})</span></div>
+      <div class="measure-item"><b>${esc(d.profundidade)}</b><span>Profundidade (${esc(d.unit)})</span></div>
+    </div><div class="measure-raw">Informado no catálogo: ${esc(p.medidas)}</div></div>`;
+  }
+
+  function waProduto(p, cor){
+    const c = cor ? ` Cor: ${cor}.` : '';
+    return wa(`Olá, ${CONFIG.nome}! Quero informações sobre o produto: ${p.nome}.${c} Gostaria de saber disponibilidade, preço de atacado e prazo.`);
+  }
+
+  function compartilharProduto(p){
+    const url = `${location.origin}${location.pathname}#produto=${encodeURIComponent(p.id)}`;
+    const texto = `${p.nome} · ${CONFIG.nome}`;
+    if (navigator.share) return navigator.share({title:p.nome,text:texto,url});
+    if (navigator.clipboard) return navigator.clipboard.writeText(url).then(() => toast('Link do produto copiado'));
+    window.prompt('Copie o link do produto:', url);
+    return Promise.resolve();
   }
 
   function priceBlock(p){
@@ -495,14 +613,15 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
       ? `<label class="field">Cor <select data-cor="${p.id}">${p.cores.map(c => `<option${c===s.cor?' selected':''}>${esc(c)}</option>`).join('')}</select></label>`
       : (p.cores && p.cores[0] ? `<div class="field">Cor <b>${esc(p.cores[0])}</b></div>` : '');
     return `<article class="card" data-id="${p.id}">
-      <div class="photo">${photo(p)}</div>
+      <div class="photo" data-detail="${esc(p.id)}" role="button" tabindex="0" aria-label="Ver detalhes de ${esc(p.nome)}">${photo(p)}</div>
       <div class="body">
         <div class="cat-name">${esc(p.categoria)}</div>
-        <h3>${esc(p.nome)}</h3>
-        <div class="specs"><span><b>Medidas:</b> ${esc(p.medidas)}</span><span><b>Material:</b> ${esc(p.material)}</span></div>
+        <h3 data-detail="${esc(p.id)}">${esc(p.nome)}</h3>
+        <div class="specs"><span><b>Medidas:</b> ${esc(p.medidas || 'Não informado')}</span><span><b>Material:</b> ${esc(p.material || 'Não informado')}</span></div>
         ${cor}
         ${priceBlock(p)}
         <div class="min">Pedido mínimo: ${p.minimo} un.</div>
+        <button class="btn btn-outline" type="button" data-detail="${p.id}">Ver detalhes e ficha técnica</button>
         <div class="buy">
           <div class="step"><button type="button" data-dec="${p.id}" aria-label="Diminuir" ${s.qtd<=p.minimo?'disabled':''}>−</button><output data-qtd="${p.id}">${s.qtd}</output><button type="button" data-inc="${p.id}" aria-label="Aumentar">+</button></div>
           <button class="btn btn-gold" type="button" data-add="${p.id}">Adicionar ao pedido</button>
@@ -521,13 +640,79 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
 
   function renderCatalogo(){
     const q = state.q.trim().toLowerCase();
-    const lista = PRODUTOS.filter(p =>
+    let lista = PRODUTOS.filter(p =>
       (state.cat === 'Todos' || p.categoria === state.cat) &&
-      (!q || (p.nome + ' ' + p.categoria + ' ' + p.material).toLowerCase().includes(q)));
+      (state.cor === 'Todas' || (p.cores || []).some(c => c.trim() === state.cor)) &&
+      (!q || (p.nome + ' ' + p.categoria + ' ' + p.material + ' ' + p.medidas).toLowerCase().includes(q)));
+    if (state.ordem === 'nome') lista.sort((a,b) => a.nome.localeCompare(b.nome,'pt-BR'));
+    if (state.ordem === 'menor-preco') lista.sort((a,b) => a.varejo - b.varejo);
+    if (state.ordem === 'maior-preco') lista.sort((a,b) => b.varejo - a.varejo);
     $('#grid').innerHTML = lista.length ? lista.map(cardHTML).join('')
       : `<div class="empty">Nenhum produto encontrado.<br><button class="btn btn-outline" type="button" id="limpar">Limpar filtros</button></div>`;
+    $('#result-count').textContent = `${lista.length} ${lista.length === 1 ? 'produto' : 'produtos'}`;
     renderStatus();
   }
+
+  /* detalhes do produto */
+  const produtoDlg = $('#produto-dlg');
+  let detalheFoto = 0;
+  function abrirDetalhe(p){
+    if (!p) return;
+    state.detalhe = p.id; detalheFoto = 0;
+    const fotos = (p.galeria && p.galeria.length ? p.galeria : (p.foto ? [p.foto] : []));
+    $('#detail-cat').textContent = p.categoria || 'Produto';
+    $('#detail-title').textContent = p.nome;
+    $('#detail-summary').innerHTML = `<div class="specs"><span><b>Material:</b> ${esc(p.material || 'Não informado')}</span><span><b>Cor(es):</b> ${esc((p.cores || []).join(', ') || 'Consultar')}</span><span><b>Pedido mínimo:</b> ${p.minimo} un.</span></div>${priceBlock(p)}`;
+    $('#detail-measures').outerHTML = medidasHTML(p).replace('class="measure-box"','class="measure-box" id="detail-measures"');
+    $('#detail-tech').innerHTML = `<h3>Ficha técnica</h3><dl>
+      <div><dt>Código</dt><dd>${esc(p.id)}</dd></div>
+      <div><dt>Categoria</dt><dd>${esc(p.categoria || 'Geral')}</dd></div>
+      <div><dt>Material</dt><dd>${esc(p.material || 'Não informado')}</dd></div>
+      <div><dt>Medidas</dt><dd>${esc(p.medidas || 'Não informado')}</dd></div>
+      <div><dt>Cores disponíveis</dt><dd>${esc((p.cores || []).join(', ') || 'Consultar')}</dd></div>
+      <div><dt>Pedido mínimo</dt><dd>${p.minimo} unidade(s)</dd></div>
+    </dl>`;
+    $('#detail-whatsapp').href = waProduto(p, selOf(p).cor);
+    $('#detail-buy').innerHTML = `<div class="step"><button type="button" id="detail-dec" aria-label="Diminuir" ${selOf(p).qtd<=p.minimo?'disabled':''}>−</button><output id="detail-qtd">${selOf(p).qtd}</output><button type="button" id="detail-inc" aria-label="Aumentar">+</button></div><button class="btn btn-gold" type="button" id="detail-add">Adicionar ao pedido</button>`;
+    renderDetalheFotos(p, fotos);
+    if (produtoDlg.showModal) produtoDlg.showModal(); else produtoDlg.setAttribute('open','');
+    history.replaceState(null,'',`#produto=${encodeURIComponent(p.id)}`);
+  }
+  function renderDetalheFotos(p, fotos){
+    const main = $('#detail-main-photo');
+    if (!fotos.length) main.innerHTML = photo(p);
+    else main.innerHTML = `<img src="${esc(fotos[detalheFoto])}" alt="${esc(p.nome)} - foto ${detalheFoto+1}" onerror="this.style.display='none'">`;
+    $('#detail-thumbs').innerHTML = fotos.map((f,i) => `<button class="detail-thumb" type="button" role="option" aria-selected="${i===detalheFoto}" data-foto="${i}"><img src="${esc(f)}" alt="Miniatura ${i+1}"></button>`).join('');
+  }
+  function fecharDetalhe(){
+    if (produtoDlg.close) produtoDlg.close(); else produtoDlg.removeAttribute('open');
+    state.detalhe = null;
+    if (location.hash.startsWith('#produto=')) history.replaceState(null,'',`${location.pathname}${location.search}`);
+  }
+  $('#detail-fechar').addEventListener('click', fecharDetalhe);
+  $('#produto-dlg').addEventListener('click', e => { if (e.target === produtoDlg) fecharDetalhe(); });
+  $('#detail-thumbs').addEventListener('click', e => {
+    const b = e.target.closest('[data-foto]'); if (!b || !state.detalhe) return;
+    const p = byId(state.detalhe), fotos = (p.galeria && p.galeria.length ? p.galeria : (p.foto ? [p.foto] : []));
+    detalheFoto = Number(b.dataset.foto); renderDetalheFotos(p, fotos);
+  });
+  $('#detail-compartilhar').addEventListener('click', () => { const p = byId(state.detalhe); if (p) compartilharProduto(p).catch(()=>{}); });
+  $('#detail-whatsapp').addEventListener('click', () => { if (state.detalhe) $('#detail-whatsapp').href = waProduto(byId(state.detalhe), selOf(byId(state.detalhe)).cor); });
+  $('#detail-buy').addEventListener('click', e => {
+    const p = byId(state.detalhe); if (!p) return; const s = selOf(p);
+    if (e.target.closest('#detail-inc')) s.qtd++;
+    else if (e.target.closest('#detail-dec') && s.qtd > p.minimo) s.qtd--;
+    else if (e.target.closest('#detail-add')) {
+      const k = keyOf(p.id,s.cor), ex = state.cart.find(l => keyOf(l.id,l.cor) === k);
+      if (ex) ex.qtd += s.qtd; else state.cart.push({id:p.id,cor:s.cor,qtd:s.qtd});
+      saveCart(); renderPedido(); toast(`${p.nome} adicionado ao pedido`); return;
+    }
+    $('#detail-qtd').textContent = s.qtd; $('#detail-dec').disabled = s.qtd <= p.minimo;
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && produtoDlg.open) fecharDetalhe();
+    if ((e.key === 'Enter' || e.key === ' ') && document.activeElement?.matches('[data-detail]')) { e.preventDefault(); abrirDetalhe(byId(document.activeElement.dataset.detail)); }
+  });
 
   /* pedido */
   const keyOf = (id, cor) => id + '|' + cor;
@@ -599,6 +784,7 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
   $('#grid').addEventListener('click', e => {
     const t = e.target;
     let b;
+    if ((b = t.closest('[data-detail]'))) { abrirDetalhe(byId(b.dataset.detail)); return; }
     if ((b = t.closest('[data-inc]'))) {
       const p = byId(b.dataset.inc), s = selOf(p); s.qtd++;
       const card = b.closest('.card'); card.querySelector('output').textContent = s.qtd; card.querySelector('[data-dec]').disabled = false;
@@ -611,15 +797,22 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
       if (ex) ex.qtd += s.qtd; else state.cart.push({ id:p.id, cor:s.cor, qtd:s.qtd });
       saveCart(); renderPedido(); toast(`${p.nome} adicionado ao pedido`);
     } else if (t.closest('#limpar')) {
-      state.cat = 'Todos'; state.q = ''; $('#busca').value = '';
-      document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.cat === 'Todos'));
-      renderCatalogo();
+      limparFiltros();
     }
   });
   $('#grid').addEventListener('change', e => {
     const sel = e.target.closest('[data-cor]'); if (!sel) return;
     selOf(byId(sel.dataset.cor)).cor = sel.value;
   });
+  $('#filtro-cor').addEventListener('change', e => { state.cor = e.target.value; renderCatalogo(); });
+  $('#filtro-ordem').addEventListener('change', e => { state.ordem = e.target.value; renderCatalogo(); });
+  function limparFiltros(){
+    state.cat = 'Todos'; state.q = ''; state.cor = 'Todas'; state.ordem = 'padrao';
+    $('#busca').value = ''; $('#filtro-cor').value = 'Todas'; $('#filtro-ordem').value = 'padrao';
+    document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.cat === 'Todos'));
+    renderCatalogo();
+  }
+  $('#limpar-filtros').addEventListener('click', limparFiltros);
 
   /* eventos da gaveta */
   $('#linhas').addEventListener('click', e => {
@@ -674,7 +867,14 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
   });
 
   /* início */
+  document.addEventListener('tra:produtos-carregados', () => { renderFiltros(); refreshAll(); });
   refreshAll();
+  const hashProduto = location.hash.match(/^#produto=(.+)$/);
+  if (hashProduto) {
+    const id = decodeURIComponent(hashProduto[1]);
+    const p = byId(id);
+    if (p) setTimeout(() => abrirDetalhe(p), 0);
+  }
 })();
 </script>
 </body>
