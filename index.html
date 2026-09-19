@@ -21,7 +21,7 @@ const CONFIG = {
   endereco: "Arapongas - PR",
   codigoRevendedor: "TRA2026",
   
-  // COLE AQUI O LINK DO SEU CSV GERADO NO GOOGLE SHEETS:
+  // SEU LINK CSV DO GOOGLE PLANILHAS
   LINK_PLANILHA: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQwkxBsWzOPpY_ndgnFPJZrD6hPrPjg1XAwt6slM5LzgpxHRNmbWiJGNjiQTMp-D8B6HdYdP_p7ckmA/pub?gid=0&single=true&output=csv"
 };
 
@@ -39,7 +39,7 @@ async function carregarPlanilhaDoGoogle() {
     const cabecalhos = linhas[0].split(',').map(c => c.trim().toLowerCase());
     
     PRODUTOS = linhas.slice(1).map(linha => {
-      const valores = linha.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, '').trim());
+      const valores = linha.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"\vert{}"$/g, '').trim());
       let obj = {};
       cabecalhos.forEach((cab, i) => obj[cab] = valores[i]);
       
@@ -47,25 +47,36 @@ async function carregarPlanilhaDoGoogle() {
       const fotosLista = obj.foto ? obj.foto.split(';').map(f => f.trim()) : [];
 
       return {
-  id: obj.id || (obj.nome ? obj.nome.replace(/\s+/g, '-').toLowerCase() : 'id-gerado'),
-  nome: obj.nome || '',
-  categoria: obj.categoria || 'Geral',
-  foto: fotosLista[0] || '',
-  galeria: fotosLista,
-  medidas: obj.medidas || '',
-  material: obj.material || '',
-  cores: obj.cores ? obj.cores.split(';').map(c => c.trim()) : [],
-  portas: obj.portas || '',
-  gavetas: obj.gavetas || '',
-  espelho: obj.espelho || '',
-  estoque: obj.estoque || '',
-  descricao: obj.descricao || obj['descrição'] || '',
-  minimo: parseInt(obj.minimo) || 1,
-  varejo: parseFloat(obj.varejo) || 0,
-  atacado: parseFloat(obj.atacado) || 0
+        id: obj.id || (obj.nome ? obj.nome.replace(/\s+/g, '-').toLowerCase() : 'id-gerado'),
+        nome: obj.nome || '',
+        categoria: obj.categoria || 'Geral',
+        foto: fotosLista[0] || '',
+        galeria: fotosLista,
+        medidas: obj.medidas || '',
+        material: obj.material || '',
+        cores: obj.cores ? obj.cores.split(';').map(c => c.trim()) : [],
+        portas: obj.portas || '',
+        gavetas: obj.gavetas || '',
+        espelho: obj.espelho || '',
+        estoque: obj.estoque || '',
+        descricao: obj.descricao || obj['descrição'] || '',
+        minimo: parseInt(obj.minimo) || 1,
+        varejo: parseFloat(obj.varejo) || 0,
+        atacado: parseFloat(obj.atacado) || 0
+      };
+    });
+
+    // Atualiza a exibição na tela após carregar os produtos
+    if (typeof renderizarProdutos === 'function') {
+      renderizarProdutos();
+    }
+  } catch (erro) {
+    console.error("Erro ao carregar os dados da planilha Google:", erro);
+  }
+}
+
 // Função para renderizar a janela de detalhes do produto
 function abrirDetalhe(p) {
-  // Função auxiliar para evitar problemas com caracteres especiais
   const esc = (txt) => String(txt || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
   // Preenche a ficha técnica dinamicamente
@@ -100,22 +111,9 @@ function abrirDetalhe(p) {
   const dlg = document.querySelector('dialog.product-dlg');
   if (dlg) dlg.showModal();
 }
-      <div><dt>Medidas</dt><dd>${esc(p.medidas || 'Não informado')}</dd></div>
-      <div><dt>Cores disponíveis</dt><dd>${esc((p.cores || []).join(', ') || 'Consultar')}</dd></div>
 
-      ${p.portas ? `<div><dt>Portas</dt><dd>${esc(p.portas)}</dd></div>` : ''}
-      ${p.gavetas ? `<div><dt>Gavetas</dt><dd>${esc(p.gavetas)}</dd></div>` : ''}
-      ${p.espelho ? `<div><dt>Espelho</dt><dd>${esc(p.espelho)}</dd></div>` : ''}
-      ${p.estoque ? `<div><dt>Estoque</dt><dd>${esc(p.estoque)}</dd></div>` : ''}
-
-      <div><dt>Pedido mínimo</dt><dd>${p.minimo} unidade(s)</dd></div>
-    </dl>`;
-  }
-
-  // Abre o modal de detalhes
-  const dlg = document.querySelector('dialog.product-dlg');
-  if (dlg) dlg.showModal();
-}
+// Inicia a busca assim que o navegador carregar a página
+document.addEventListener('DOMContentLoaded', carregarPlanilhaDoGoogle);
 </script>
 <!-- ================== FIM DA ÁREA DE EDIÇÃO ================== -->
 
