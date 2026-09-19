@@ -54,7 +54,12 @@ async function carregarPlanilhaDoGoogle() {
         galeria: fotosLista,       // Lista completa de fotos (capa, medidas, etc.)
         medidas: obj.medidas || '',
         material: obj.material || '',
+        portas: obj.portas || '',
+        gavetas: obj.gavetas || '',
+        espelho: obj.espelho || '',
+        estoque: obj.estoque || '',
         cores: obj.cores ? obj.cores.split(';') : [],
+        descricao: obj.descricao || '',
         minimo: parseInt(obj.minimo) || 1,
         varejo: parseFloat(obj.varejo) || 0,
         atacado: parseFloat(obj.atacado) || 0
