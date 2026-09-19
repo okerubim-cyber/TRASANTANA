@@ -50,7 +50,6 @@ async function carregarPlanilhaDoGoogle() {
         id: obj.id || (obj.nome ? obj.nome.replace(/\s+/g, '-').toLowerCase() : 'id-gerado'),
         nome: obj.nome || '',
         categoria: obj.categoria || 'Geral',
-        tipo: obj.tipo || 'sofa',
         foto: fotosLista[0] || '', // Primeira foto como principal para a capa
         galeria: fotosLista,       // Lista completa de fotos (capa, medidas, etc.)
         medidas: obj.medidas || '',
