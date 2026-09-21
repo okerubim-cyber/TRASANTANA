@@ -1053,6 +1053,20 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
   $('#fechar').addEventListener('click', fecharGaveta);
   $('#veil').addEventListener('click', fecharGaveta);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharGaveta(); });
+
+  /* rolagem suave para links internos (nunca abre nova guia) */
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.setAttribute('target','_self');
+    a.addEventListener('click', e => {
+      const href = a.getAttribute('href');
+      if (!href || href.length < 2) return;
+      const alvo = document.querySelector(href);
+      if (!alvo) return;
+      e.preventDefault();
+      alvo.scrollIntoView({ behavior:'smooth' });
+      history.replaceState(null,'',href);
+    });
+  });
   $('#enviar').addEventListener('click', e => { if (!state.cart.length) e.preventDefault(); });
 
   /* acesso do revendedor */
