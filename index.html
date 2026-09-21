@@ -234,6 +234,11 @@ section{padding:72px 0}
 .buy .btn{flex:1;padding:10px 12px;font-size:15px}
 .empty{grid-column:1/-1;text-align:center;padding:56px 16px;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
 .empty .btn{margin-top:14px}
+.paginacao{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+.paginacao button{min-width:42px;height:42px;padding:0 14px;border:1px solid var(--line);background:var(--panel);border-radius:6px;color:var(--muted);cursor:pointer}
+.paginacao button:hover{border-color:var(--gold-lo);color:var(--text)}
+.paginacao button[aria-current="true"]{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
+.paginacao button:disabled{opacity:.35;pointer-events:none}
 
 /* como funciona */
 .how{background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -498,6 +503,7 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
 
+<base target="_blank">
 </head>
 <body>
 
@@ -590,6 +596,7 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
     </div>
     <div class="status" id="status"></div>
     <div class="grid" id="grid"></div>
+    <div class="paginacao" id="paginacao"></div>
   </div>
 </section>
 
@@ -716,7 +723,7 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
     del(k){ try { localStorage.removeItem(k); } catch(e){} }
   };
 
-  const state = { cat:'Todos', q:'', unlocked: !usaCodigo, cart:[], sel:{}, cor:'Todas', ordem:'padrao', detalhe:null };
+  const state = { cat:'Todos', q:'', unlocked: !usaCodigo, cart:[], sel:{}, cor:'Todas', ordem:'padrao', detalhe:null, pagina: 1 };
   if (usaCodigo && store.get('tra_acesso') === CONFIG.codigoRevendedor.toLowerCase()) state.unlocked = true;
   try {
     const saved = JSON.parse(store.get('tra_pedido') || '[]');
@@ -831,6 +838,17 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
       : `<span>${LOCK.replace('<svg','<svg width="15" height="15" style="vertical-align:-2px"')} Preço de atacado e lucro aparecem com o código de revendedor.</span><button type="button" id="abrir-cod">Tenho um código</button>`;
   }
 
+  function paginacaoHTML(total){
+    if (total <= 1) return '';
+    const p = state.pagina;
+    let html = `<button type="button" data-pag="${p-1}" ${p===1?'disabled':''} aria-label="Página anterior">&#8249;</button>`;
+    for (let i = 1; i <= total; i++) html += `<button type="button" data-pag="${i}" aria-current="${i===p}">${i}</button>`;
+    html += `<button type="button" data-pag="${p+1}" ${p===total?'disabled':''} aria-label="Próxima página">&#8250;</button>`;
+    return html;
+  }
+
+  const POR_PAGINA = 32;
+
   function renderCatalogo(){
     const q = state.q.trim().toLowerCase();
     let lista = PRODUTOS.filter(p =>
@@ -840,9 +858,13 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
     if (state.ordem === 'nome') lista.sort((a,b) => a.nome.localeCompare(b.nome,'pt-BR'));
     if (state.ordem === 'menor-preco') lista.sort((a,b) => a.varejo - b.varejo);
     if (state.ordem === 'maior-preco') lista.sort((a,b) => b.varejo - a.varejo);
-    $('#grid').innerHTML = lista.length ? lista.map(cardHTML).join('')
+    const totalPaginas = Math.max(1, Math.ceil(lista.length / POR_PAGINA));
+    state.pagina = Math.min(Math.max(1, state.pagina), totalPaginas);
+    const fatia = lista.slice((state.pagina - 1) * POR_PAGINA, state.pagina * POR_PAGINA);
+    $('#grid').innerHTML = fatia.length ? fatia.map(cardHTML).join('')
       : `<div class="empty">Nenhum produto encontrado.<br><button class="btn btn-outline" type="button" id="limpar">Limpar filtros</button></div>`;
     $('#result-count').textContent = `${lista.length} ${lista.length === 1 ? 'produto' : 'produtos'}`;
+    $('#paginacao').innerHTML = paginacaoHTML(totalPaginas);
     renderStatus();
   }
 
@@ -969,10 +991,11 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
   $('#chips').addEventListener('click', e => {
     const b = e.target.closest('[data-cat]'); if (!b) return;
     state.cat = b.dataset.cat;
+    state.pagina = 1;
     document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.cat === state.cat));
     renderCatalogo();
   });
-  $('#busca').addEventListener('input', e => { state.q = e.target.value; renderCatalogo(); });
+  $('#busca').addEventListener('input', e => { state.q = e.target.value; state.pagina = 1; renderCatalogo(); });
 
   $('#grid').addEventListener('click', e => {
     const t = e.target;
@@ -997,15 +1020,22 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.7)}
     const sel = e.target.closest('[data-cor]'); if (!sel) return;
     selOf(byId(sel.dataset.cor)).cor = sel.value;
   });
-  $('#filtro-cor').addEventListener('change', e => { state.cor = e.target.value; renderCatalogo(); });
-  $('#filtro-ordem').addEventListener('change', e => { state.ordem = e.target.value; renderCatalogo(); });
+  $('#filtro-cor').addEventListener('change', e => { state.cor = e.target.value; state.pagina = 1; renderCatalogo(); });
+  $('#filtro-ordem').addEventListener('change', e => { state.ordem = e.target.value; state.pagina = 1; renderCatalogo(); });
   function limparFiltros(){
-    state.cat = 'Todos'; state.q = ''; state.cor = 'Todas'; state.ordem = 'padrao';
+    state.cat = 'Todos'; state.q = ''; state.cor = 'Todas'; state.ordem = 'padrao'; state.pagina = 1;
     $('#busca').value = ''; $('#filtro-cor').value = 'Todas'; $('#filtro-ordem').value = 'padrao';
     document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.cat === 'Todos'));
     renderCatalogo();
   }
   $('#limpar-filtros').addEventListener('click', limparFiltros);
+
+  $('#paginacao').addEventListener('click', e => {
+    const b = e.target.closest('[data-pag]'); if (!b || b.disabled) return;
+    state.pagina = Number(b.dataset.pag);
+    renderCatalogo();
+    document.getElementById('catalogo').scrollIntoView({ behavior:'smooth' });
+  });
 
   /* eventos da gaveta */
   $('#linhas').addEventListener('click', e => {
